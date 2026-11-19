@@ -1,0 +1,6 @@
+<div class="flex items-center gap-3">
+  <app-status-badge [value]="actif"></app-status-badge>
+  <app-button variant="outline" size="sm" [disabled]="loading" (click)="toggle()">
+    {{ actif ? 'Désactiver' : 'Activer' }}
+  </app-button>
+</div>

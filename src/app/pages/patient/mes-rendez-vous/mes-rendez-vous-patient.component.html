@@ -1,0 +1,14 @@
+<section class="space-y-6">
+  <app-page-header title="Mes rendez-vous"></app-page-header>
+  <app-alert *ngIf="noPatientId" variant="destructive">Votre compte patient n'est pas encore configuré.</app-alert>
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
+  <app-empty-state *ngIf="!loading && !noPatientId && !error && rendezVous.content.length === 0" title="Aucun rendez-vous"
+    description="Vos rendez-vous apparaîtront ici."></app-empty-state>
+  <div *ngIf="!loading && !noPatientId && !error" class="grid gap-4">
+    <app-rendez-vous-card *ngFor="let item of rendezVous.content" [rendezVous]="item"></app-rendez-vous-card>
+  </div>
+  <app-pagination *ngIf="!noPatientId && rendezVous.totalElements > 0"
+    [currentPage]="currentPage" [pageSize]="pageSize" [totalElements]="rendezVous.totalElements"
+    (pageChange)="onPageChange($event)"></app-pagination>
+</section>

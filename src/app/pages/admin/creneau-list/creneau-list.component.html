@@ -1,0 +1,21 @@
+<section class="space-y-6">
+  <app-page-header title="Créneaux">
+    <app-button actions (click)="onNew()">Nouveau créneau</app-button>
+  </app-page-header>
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-data-table *ngIf="!showForm" [columns]="columns" [rows]="creneaux?.content ?? []"
+    [loading]="loading" (rowClick)="onRowClick($event)"></app-data-table>
+  <app-pagination *ngIf="creneaux && !showForm" [currentPage]="creneaux.number" [pageSize]="creneaux.size"
+    [totalElements]="creneaux.totalElements" (pageChange)="onPageChange($event)"></app-pagination>
+  <app-card *ngIf="showForm">
+    <h2 class="mb-4 text-lg font-semibold">{{ editTarget ? 'Modifier le créneau' : 'Nouveau créneau' }}</h2>
+    <app-creneau-form [initialValues]="editTarget" [loading]="loading"
+      (formSubmit)="onFormSubmit($event)" (cancelled)="onFormCancel()"></app-creneau-form>
+    <div *ngIf="editTarget?.id !== null && editTarget" class="mt-4">
+      <app-button variant="destructive" (click)="onDeleteRequest(editTarget.id!)">Supprimer le créneau</app-button>
+    </div>
+  </app-card>
+  <app-confirm-dialog #confirmDelete title="Supprimer le créneau"
+    message="Cette action est irréversible." confirmLabel="Supprimer"
+    [destructive]="true" (confirmed)="onDeleteConfirm()" (cancelled)="onDeleteCancel()"></app-confirm-dialog>
+</section>

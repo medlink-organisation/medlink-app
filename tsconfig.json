@@ -1,5 +1,3 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -12,7 +10,27 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "paths": {
+      "@spartan-ng/helm/utils": ["./src/app/shared/ui/primitives/utils/src/index.ts"],
+      "@spartan-ng/helm/button": ["./src/app/shared/ui/primitives/button/src/index.ts"],
+      "@spartan-ng/helm/badge": ["./src/app/shared/ui/primitives/badge/src/index.ts"],
+      "@spartan-ng/helm/card": ["./src/app/shared/ui/primitives/card/src/index.ts"],
+      "@spartan-ng/helm/alert": ["./src/app/shared/ui/primitives/alert/src/index.ts"],
+      "@spartan-ng/helm/field": ["./src/app/shared/ui/primitives/field/src/index.ts"],
+      "@spartan-ng/helm/label": ["./src/app/shared/ui/primitives/label/src/index.ts"],
+      "@spartan-ng/helm/separator": ["./src/app/shared/ui/primitives/separator/src/index.ts"],
+      "@spartan-ng/helm/input": ["./src/app/shared/ui/primitives/input/src/index.ts"],
+      "@spartan-ng/helm/skeleton": ["./src/app/shared/ui/primitives/skeleton/src/index.ts"],
+      "@spartan-ng/helm/dialog": ["./src/app/shared/ui/primitives/dialog/src/index.ts"],
+      "@spartan-ng/helm/select": ["./src/app/shared/ui/primitives/select/src/index.ts"],
+      "@spartan-ng/helm/checkbox": ["./src/app/shared/ui/primitives/checkbox/src/index.ts"],
+      "@spartan-ng/helm/radio-group": ["./src/app/shared/ui/primitives/radio-group/src/index.ts"],
+      "@spartan-ng/helm/switch": ["./src/app/shared/ui/primitives/switch/src/index.ts"],
+      "@spartan-ng/helm/textarea": ["./src/app/shared/ui/primitives/textarea/src/index.ts"],
+      "@spartan-ng/helm/tabs": ["./src/app/shared/ui/primitives/tabs/src/index.ts"],
+      "@spartan-ng/helm/table": ["./src/app/shared/ui/primitives/table/src/index.ts"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

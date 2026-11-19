@@ -1,0 +1,20 @@
+<app-form [formGroup]="formGroup" (submitted)="submit()">
+  <div class="grid gap-4 md:grid-cols-2">
+    <app-form-field label="ID praticien" [required]="true">
+      <input appFormControl formControlName="praticienId" type="number" min="1" />
+    </app-form-field>
+    <app-form-field label="ID clinique" [required]="true">
+      <input appFormControl formControlName="cliniqueId" type="number" min="1" />
+    </app-form-field>
+    <app-form-field label="Début" [required]="true">
+      <app-date-picker formControlName="dateDebut" label="Début"></app-date-picker>
+    </app-form-field>
+    <app-form-field label="Fin" [required]="true">
+      <app-date-picker formControlName="dateFin" label="Fin"></app-date-picker>
+    </app-form-field>
+  </div>
+  <div class="mt-5 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="loading" (click)="cancelled.emit()">Annuler</app-button>
+    <app-button type="submit" [loading]="loading" [disabled]="loading">Enregistrer</app-button>
+  </div>
+</app-form>

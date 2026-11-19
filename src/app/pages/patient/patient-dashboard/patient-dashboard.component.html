@@ -1,0 +1,7 @@
+<section class="space-y-6">
+  <app-page-header title="Mon espace" subtitle="Retrouvez le suivi de vos rendez-vous"></app-page-header>
+  <app-skeleton *ngIf="loading" [rows]="1"></app-skeleton>
+  <app-alert *ngIf="noPatientId" variant="destructive">Votre compte patient n'est pas encore configuré.</app-alert>
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-stat-card *ngIf="!loading && !noPatientId && !error" label="Rendez-vous" [value]="rendezVousCount" icon="clipboard"></app-stat-card>
+</section>

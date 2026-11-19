@@ -1,0 +1,13 @@
+<aside class="flex h-full w-64 flex-col border-r border-border bg-background p-4 text-foreground">
+  <h2 class="mb-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ heading }}</h2>
+  <nav class="space-y-1" aria-label="Navigation latérale">
+    <a
+      *ngFor="let item of items"
+      [routerLink]="item.route"
+      routerLinkActive="bg-muted text-foreground"
+      class="flex items-center rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <span *ngIf="item.icon" aria-hidden="true" class="mr-2">{{ item.icon }}</span>{{ item.label }}
+    </a>
+  </nav>
+</aside>

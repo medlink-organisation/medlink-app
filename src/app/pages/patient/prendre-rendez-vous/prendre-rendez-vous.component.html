@@ -1,0 +1,14 @@
+<section class="space-y-6">
+  <app-page-header title="Prendre un rendez-vous" subtitle="Sélectionnez un créneau disponible"></app-page-header>
+  <app-alert *ngIf="error" variant="destructive" title="Information">{{ error }}</app-alert>
+  <app-alert *ngIf="noPatientId" variant="destructive">Votre compte patient n'est pas encore configuré.</app-alert>
+  <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
+  <app-empty-state *ngIf="!loading && slots.length === 0" title="Aucun créneau disponible"></app-empty-state>
+  <app-time-slot-picker *ngIf="!loading && slots.length > 0" [slots]="slots"
+    [selectedSlotId]="selectedCreneauId" (slotSelected)="onSlotSelected($event)"></app-time-slot-picker>
+  <div class="flex justify-end">
+    <app-button [disabled]="selectedCreneauId === null || patientId === null || saving" [loading]="saving" (click)="onConfirm()">
+      Confirmer
+    </app-button>
+  </div>
+</section>

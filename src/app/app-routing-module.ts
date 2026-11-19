@@ -1,34 +1,38 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+
 import { authGuard } from './core/auth/auth.guard';
 import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { HomeComponent } from './pages/home/home.component';
-import { RoleDashboardComponent } from './pages/role-dashboard/role-dashboard.component';
+import { LoginComponent } from './pages/auth/login/login.component';
 
 const routes: Routes = [
-  { path: '', component: HomeComponent, pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
   {
-    path: 'admin',
-    component: RoleDashboardComponent,
-    canActivate: [authGuard],
-    data: { roles: ['ADMIN'], role: 'ADMIN', title: 'Administration MedLink' }
+    path: 'auth',
+    children: [
+      { path: 'login', component: LoginComponent },
+      { path: 'access-denied', component: AccessDeniedComponent }
+    ]
   },
   {
-    path: 'patient',
-    component: RoleDashboardComponent,
+    path: 'admin',
     canActivate: [authGuard],
-    data: { roles: ['PATIENT'], role: 'PATIENT', title: 'Espace patient' }
+    data: { roles: ['ADMIN'] },
+    loadChildren: () => import('./pages/admin/admin.module').then((module) => module.AdminModule)
   },
   {
     path: 'praticien',
-    component: RoleDashboardComponent,
     canActivate: [authGuard],
-    data: { roles: ['PRATICIEN'], role: 'PRATICIEN', title: 'Espace praticien' }
+    data: { roles: ['PRATICIEN'] },
+    loadChildren: () => import('./pages/praticien/praticien.module').then((module) => module.PraticienModule)
   },
-  { path: 'access-denied', component: AccessDeniedComponent },
-  { path: '**', redirectTo: '' }
+  {
+    path: 'patient',
+    canActivate: [authGuard],
+    data: { roles: ['PATIENT'] },
+    loadChildren: () => import('./pages/patient/patient.module').then((module) => module.PatientModule)
+  },
+  { path: '**', redirectTo: 'auth/login' }
 ];
 
 @NgModule({

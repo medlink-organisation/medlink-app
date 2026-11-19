@@ -1,0 +1,53 @@
+<section class="space-y-6">
+  <app-page-header title="Spécialités">
+    <app-button actions (click)="onNew()">Nouvelle spécialité</app-button>
+  </app-page-header>
+
+  <app-alert *ngIf="error" variant="destructive" [title]="error"></app-alert>
+
+  <app-search-input (search)="onSearch($event)"></app-search-input>
+
+  <app-specialty-form
+    *ngIf="showForm"
+    [initialValues]="editTarget"
+    [loading]="loading"
+    (formSubmit)="onFormSubmit($event)"
+    (cancelled)="onFormCancel()">
+  </app-specialty-form>
+
+  <app-data-table
+    *ngIf="!showForm"
+    [columns]="columns"
+    [rows]="rows"
+    [loading]="loading"
+    (rowClick)="onRowClick($event)">
+  </app-data-table>
+
+  <app-pagination
+    *ngIf="specialites && !showForm"
+    [currentPage]="specialites.number"
+    [pageSize]="specialites.size"
+    [totalElements]="specialites.totalElements"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+
+  <div *ngIf="editTarget as selected" class="flex flex-wrap gap-2">
+    <app-button variant="outline" size="sm" (click)="onDeleteRequest(selected.id!)">Supprimer la spécialité</app-button>
+    <app-status-toggle
+      *ngIf="selected.id !== null"
+      [id]="selected.id"
+      [actif]="selected.actif === true"
+      (toggled)="onToggleStatus($event)">
+    </app-status-toggle>
+  </div>
+
+  <app-confirm-dialog
+    #confirmDelete
+    title="Supprimer la spécialité"
+    message="Cette action est irréversible."
+    confirmLabel="Supprimer"
+    [destructive]="true"
+    (confirmed)="onDeleteConfirm()"
+    (cancelled)="onDeleteCancel()">
+  </app-confirm-dialog>
+</section>

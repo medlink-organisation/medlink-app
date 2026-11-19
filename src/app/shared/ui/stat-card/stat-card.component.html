@@ -1,0 +1,12 @@
+<section hlmCard>
+  <div hlmCardContent class="space-y-3">
+    <div class="flex items-start justify-between gap-3">
+      <p class="text-sm text-muted-foreground">{{ label }}</p>
+      <span *ngIf="icon" aria-hidden="true" class="text-xl text-muted-foreground">{{ icon }}</span>
+    </div>
+    <p class="text-3xl font-semibold tracking-tight">{{ value }}</p>
+    <p *ngIf="trend" class="text-sm" [class.text-green-600]="trendPositive" [class.text-red-600]="!trendPositive">
+      {{ trend }}
+    </p>
+  </div>
+</section>

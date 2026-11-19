@@ -1,0 +1,10 @@
+<section class="space-y-6">
+  <app-page-header title="Rendez-vous"></app-page-header>
+  <app-alert *ngIf="error" variant="destructive" [title]="error"></app-alert>
+  <app-data-table [columns]="columns" [rows]="rendezVous?.content ?? []" [loading]="loading"
+    (rowClick)="onRowClick($event)"></app-data-table>
+  <app-pagination *ngIf="rendezVous" [currentPage]="rendezVous.number" [pageSize]="rendezVous.size"
+    [totalElements]="rendezVous.totalElements" (pageChange)="onPageChange($event)"></app-pagination>
+  <app-rendez-vous-card *ngIf="selectedRdv" [rendezVous]="selectedRdv"
+    (action)="onAction($event)"></app-rendez-vous-card>
+</section>

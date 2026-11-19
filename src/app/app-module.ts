@@ -7,17 +7,15 @@ import { App } from './app';
 import { AuthService } from './core/auth/auth.service';
 import { authInterceptor } from './core/auth/auth-interceptor';
 import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { HomeComponent } from './pages/home/home.component';
-import { RoleDashboardComponent } from './pages/role-dashboard/role-dashboard.component';
+import { AccessDeniedPageComponent } from './pages/auth/access-denied/access-denied.component';
+import { LoginComponent } from './pages/auth/login/login.component';
 
 @NgModule({
   declarations: [
     App,
-    HomeComponent,
-    DashboardComponent,
-    RoleDashboardComponent,
-    AccessDeniedComponent
+    LoginComponent,
+    AccessDeniedComponent,
+    AccessDeniedPageComponent
   ],
   imports: [
     BrowserModule,

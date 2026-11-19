@@ -1,0 +1,11 @@
+<app-form-field [label]="label">
+  <input
+    appFormControl
+    type="date"
+    [attr.placeholder]="placeholder || null"
+    [value]="value"
+    [disabled]="disabled"
+    (input)="onInput($event)"
+    (blur)="markTouched()"
+  />
+</app-form-field>
