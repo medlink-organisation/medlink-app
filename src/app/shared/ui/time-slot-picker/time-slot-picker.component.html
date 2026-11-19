@@ -1,0 +1,13 @@
+<div class="grid grid-cols-3 gap-3">
+  <button
+    *ngFor="let slot of slots"
+    hlmBtn
+    type="button"
+    [variant]="selectedSlotId === slot.id ? 'default' : 'outline'"
+    [disabled]="isDisabled(slot)"
+    [class.opacity-50]="isDisabled(slot)"
+    (click)="select(slot)"
+  >
+    {{ formatTime(slot.dateDebut) }} – {{ formatTime(slot.dateFin) }}
+  </button>
+</div>

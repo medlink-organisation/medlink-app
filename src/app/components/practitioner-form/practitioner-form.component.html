@@ -1,0 +1,29 @@
+<app-form [formGroup]="formGroup" (submitted)="submit()">
+  <div class="grid gap-4 md:grid-cols-2">
+    <app-form-field label="Nom" [required]="true" [error]="errorFor('nom')">
+      <input appFormControl formControlName="nom" autocomplete="family-name" />
+    </app-form-field>
+    <app-form-field label="Prénom" [required]="true" [error]="errorFor('prenom')">
+      <input appFormControl formControlName="prenom" autocomplete="given-name" />
+    </app-form-field>
+    <app-form-field label="E-mail" [required]="true" [error]="errorFor('email')">
+      <input appFormControl formControlName="email" type="email" autocomplete="email" />
+    </app-form-field>
+    <app-form-field label="Téléphone" [error]="errorFor('phone')">
+      <input appFormControl formControlName="phone" type="tel" autocomplete="tel" />
+    </app-form-field>
+    <app-form-field label="Numéro d'ordre" [required]="true" [error]="errorFor('numeroOrdre')">
+      <input appFormControl formControlName="numeroOrdre" />
+    </app-form-field>
+    <app-form-field label="Spécialité" [required]="true" [error]="errorFor('specialiteId')">
+      <select appFormControl formControlName="specialiteId">
+        <option value="">Choisir une spécialité</option>
+        <option *ngFor="let specialite of specialites" [value]="specialite.id">{{ specialite.nom }}</option>
+      </select>
+    </app-form-field>
+  </div>
+  <div class="mt-5 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="loading" (click)="cancelled.emit()">Annuler</app-button>
+    <app-button type="submit" [loading]="loading" [disabled]="loading">Enregistrer</app-button>
+  </div>
+</app-form>

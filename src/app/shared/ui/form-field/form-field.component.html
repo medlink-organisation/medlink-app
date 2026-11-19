@@ -1,0 +1,13 @@
+<div hlmField>
+  <label hlmLabel [attr.for]="fieldId">
+    {{ label }}
+    <span *ngIf="required" aria-hidden="true" class="text-destructive">*</span>
+  </label>
+  <ng-content></ng-content>
+  <p hlmFieldDescription *ngIf="hint" [id]="fieldId + '-hint'">
+    {{ hint }}
+  </p>
+  <hlm-field-error *ngIf="error" [id]="fieldId + '-error'" [forceShow]="true">
+    {{ error }}
+  </hlm-field-error>
+</div>

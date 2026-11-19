@@ -1,0 +1,10 @@
+<section class="space-y-6">
+  <app-page-header title="Mes rendez-vous"></app-page-header>
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
+  <app-empty-state *ngIf="!loading && rendezVous.content.length === 0" title="Aucun rendez-vous"
+    description="Vos rendez-vous apparaîtront ici."></app-empty-state>
+  <div *ngIf="!loading" class="grid gap-4">
+    <app-rendez-vous-card *ngFor="let item of rendezVous.content" [rendezVous]="item"></app-rendez-vous-card>
+  </div>
+</section>

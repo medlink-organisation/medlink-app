@@ -1,0 +1,17 @@
+<app-form [formGroup]="formGroup" (submitted)="submit()">
+  <div class="grid gap-4 md:grid-cols-2">
+    <app-form-field label="Code" [required]="true" [error]="errorFor('code')">
+      <input appFormControl formControlName="code" maxlength="50" />
+    </app-form-field>
+    <app-form-field label="Nom" [required]="true" [error]="errorFor('nom')">
+      <input appFormControl formControlName="nom" maxlength="150" />
+    </app-form-field>
+    <app-form-field label="Description" class="md:col-span-2" [error]="errorFor('description')">
+      <textarea appFormControl formControlName="description" rows="3" maxlength="500"></textarea>
+    </app-form-field>
+  </div>
+  <div class="mt-5 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="loading" (click)="cancelled.emit()">Annuler</app-button>
+    <app-button type="submit" [loading]="loading" [disabled]="loading">Enregistrer</app-button>
+  </div>
+</app-form>

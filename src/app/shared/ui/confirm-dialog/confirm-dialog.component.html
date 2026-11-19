@@ -1,0 +1,13 @@
+<button type="button" class="sr-only" (click)="show()">Ouvrir la confirmation</button>
+<hlm-dialog [state]="open ? 'open' : 'closed'">
+  <hlm-dialog-content>
+    <div hlmDialogHeader>
+      <h2 hlmDialogTitle>{{ title }}</h2>
+      <p hlmDialogDescription>{{ message }}</p>
+    </div>
+    <div hlmDialogFooter>
+      <app-button variant="outline" (click)="onCancel()">{{ cancelLabel }}</app-button>
+      <app-button [variant]="confirmVariant" (click)="onConfirm()">{{ confirmLabel }}</app-button>
+    </div>
+  </hlm-dialog-content>
+</hlm-dialog>

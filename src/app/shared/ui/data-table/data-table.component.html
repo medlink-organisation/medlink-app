@@ -1,0 +1,16 @@
+<app-skeleton *ngIf="loading" [rows]="5"></app-skeleton>
+<app-empty-state *ngIf="!loading && rows.length === 0" [title]="emptyLabel"></app-empty-state>
+<div *ngIf="!loading && rows.length > 0" hlmTableContainer class="rounded-md border border-border">
+  <table hlmTable>
+    <thead hlmTHead>
+      <tr hlmTr>
+        <th *ngFor="let column of columns" hlmTh scope="col">{{ column.label }}</th>
+      </tr>
+    </thead>
+    <tbody hlmTBody>
+      <tr *ngFor="let row of rows; let rowIndex = index" hlmTr (click)="selectRow(row)" class="cursor-pointer">
+        <td *ngFor="let column of columns" hlmTd>{{ formatCell(row, column) }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

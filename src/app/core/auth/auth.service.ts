@@ -1,5 +1,7 @@
 import { Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { KeycloakProfile, KeycloakTokenParsed } from 'keycloak-js';
+import { map, Observable } from 'rxjs';
 
 import { keycloak, keycloakInitOptions } from './keycloak.config';
 
@@ -35,6 +37,9 @@ export class AuthService {
   private refreshTimer?: ReturnType<typeof setTimeout>;
 
   readonly state = this.stateSignal.asReadonly();
+  readonly patientId$: Observable<number | null> = toObservable(this.state).pipe(
+    map(() => this.getPatientId())
+  );
 
   async initialize(): Promise<void> {
     this.registerKeycloakEvents();
@@ -52,7 +57,7 @@ export class AuthService {
     }
   }
 
-  async login(returnUrl = '/dashboard'): Promise<void> {
+  async login(returnUrl = '/auth/login'): Promise<void> {
     this.stateSignal.update((state) => ({ ...state, loading: true, error: null }));
     try {
       await keycloak.login({ redirectUri: this.getSafeRedirectUri(returnUrl) });
@@ -116,6 +121,22 @@ export class AuthService {
 
   getProfile(): AuthProfile | null {
     return this.stateSignal().profile;
+  }
+
+  /**
+   * TODO: patient-service integration
+   * When a patient-service is available, replace this method with
+   * a call to GET /patient-service/patients/me using the
+   * authenticated user's keycloakId. The response should contain
+   * the numeric patient ID to store here.
+   * Until then, the token claim 'patient_id' acts as a bridge:
+   * set it in Keycloak via a custom mapper on the medilink client.
+   */
+  getPatientId(): number | null {
+    const patientId = keycloak.tokenParsed?.['patient_id'];
+    return typeof patientId === 'number' && Number.isSafeInteger(patientId) && patientId > 0
+      ? patientId
+      : null;
   }
 
   async refreshToken(force: boolean): Promise<string | null> {

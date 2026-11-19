@@ -1,0 +1,6 @@
+<div hlmAlert [variant]="variant">
+  <h2 hlmAlertTitle *ngIf="title">{{ title }}</h2>
+  <div hlmAlertDescription>
+    <ng-content></ng-content>
+  </div>
+</div>

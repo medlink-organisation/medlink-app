@@ -14,7 +14,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   const requiredRoles = (route.data['roles'] as string[] | undefined) ?? [];
   if (requiredRoles.length > 0 && !requiredRoles.some((role) => authService.hasRole(role))) {
-    return router.createUrlTree(['/access-denied']);
+    return router.createUrlTree(['/auth/access-denied']);
   }
 
   return true;

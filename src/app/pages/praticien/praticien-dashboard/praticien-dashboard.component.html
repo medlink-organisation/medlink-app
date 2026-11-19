@@ -1,0 +1,9 @@
+<section class="space-y-6">
+  <app-page-header title="Tableau de bord" subtitle="Votre activité en un coup d'œil"></app-page-header>
+  <app-skeleton *ngIf="loading" [rows]="2"></app-skeleton>
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <div *ngIf="!loading" class="grid gap-4 sm:grid-cols-2">
+    <app-stat-card label="Créneaux" [value]="creneauCount" icon="calendar"></app-stat-card>
+    <app-stat-card label="Rendez-vous" [value]="rendezVousCount" icon="clipboard"></app-stat-card>
+  </div>
+</section>

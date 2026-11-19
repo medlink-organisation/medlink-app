@@ -1,0 +1,29 @@
+<header class="fixed inset-x-0 top-0 z-40 border-b border-border bg-background text-foreground">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3" aria-label="Navigation principale">
+    <a routerLink="/" class="text-lg font-semibold">{{ brand }}</a>
+    <div class="hidden items-center gap-5 md:flex">
+      <a *ngFor="let item of items" [routerLink]="item.route" class="text-sm text-muted-foreground hover:text-foreground">
+        <span *ngIf="item.icon" aria-hidden="true" class="mr-2">{{ item.icon }}</span>{{ item.label }}
+      </a>
+    </div>
+    <button
+      type="button"
+      class="inline-flex size-10 items-center justify-center rounded-md border border-border md:hidden"
+      [attr.aria-expanded]="menuOpen"
+      aria-label="Ouvrir ou fermer le menu"
+      (click)="toggleMenu()"
+    >
+      <span aria-hidden="true" class="text-xl">{{ menuOpen ? '×' : '☰' }}</span>
+    </button>
+  </nav>
+  <div *ngIf="menuOpen" class="border-t border-border bg-background px-4 py-3 md:hidden">
+    <a
+      *ngFor="let item of items"
+      [routerLink]="item.route"
+      class="block rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+      (click)="closeMenu()"
+    >
+      <span *ngIf="item.icon" aria-hidden="true" class="mr-2">{{ item.icon }}</span>{{ item.label }}
+    </a>
+  </div>
+</header>
