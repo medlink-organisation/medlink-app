@@ -1,5 +1,7 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 
+export type FileUploadState = 'idle' | 'selected' | 'uploading' | 'scanning' | 'success' | 'error' | 'rejected';
+
 @Component({
   selector: 'app-file-upload',
   templateUrl: './file-upload.component.html',
@@ -9,6 +11,9 @@ export class FileUploadComponent {
   @Input() accept = 'application/pdf';
   @Input() maxSizeMb = 10;
   @Input() label = 'Déposer un fichier';
+  @Input() state: FileUploadState = 'idle';
+  @Input() progress = 0;
+  @Input() message = '';
   @Output() fileSelected = new EventEmitter<File>();
   @Output() validationError = new EventEmitter<string>();
 
@@ -82,7 +87,27 @@ export class FileUploadComponent {
       return;
     }
     this.selectedFile = file;
+    this.state = 'selected';
     this.fileSelected.emit(file);
+  }
+
+  clear(event?: Event): void {
+    event?.stopPropagation();
+    this.selectedFile = null;
+    this.state = 'idle';
+  }
+
+  get stateLabel(): string {
+    const labels: Record<FileUploadState, string> = {
+      idle: '',
+      selected: 'Fichier prêt à être envoyé',
+      uploading: 'Envoi en cours',
+      scanning: 'Analyse de sécurité en cours',
+      success: 'Fichier validé',
+      error: 'Échec de l’envoi',
+      rejected: 'Fichier refusé'
+    };
+    return labels[this.state];
   }
 
   get formattedSize(): string {

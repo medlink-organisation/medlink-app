@@ -1,0 +1,63 @@
+<div class="min-h-dvh bg-[var(--ml-background)] text-[var(--ml-text-primary)]">
+  <aside
+    class="fixed inset-y-0 left-0 z-40 hidden border-r border-[var(--ml-border)] transition-[width] duration-200 lg:block"
+    [style.width]="collapsed ? 'var(--ml-sidebar-collapsed-width)' : 'var(--ml-sidebar-width)'">
+    <app-sidebar
+      [heading]="sectionLabel"
+      [roleLabel]="roleLabel"
+      [items]="navigation"
+      [collapsed]="collapsed"
+      (collapsedChange)="setCollapsed($event)">
+    </app-sidebar>
+  </aside>
+
+  <div
+    class="ml-shell-offset min-h-dvh transition-[padding-left] duration-200"
+    [style.--ml-shell-current-width]="collapsed ? 'var(--ml-sidebar-collapsed-width)' : 'var(--ml-sidebar-width)'">
+    <div class="min-h-dvh">
+      <app-topbar
+        [breadcrumbs]="breadcrumbs"
+        [roleLabel]="roleLabel"
+        [profileRoute]="profileRoute"
+        (menuToggle)="toggleMobile()">
+      </app-topbar>
+      <main id="main-content" tabindex="-1">
+        <app-page-container>
+          <ng-content></ng-content>
+        </app-page-container>
+      </main>
+    </div>
+  </div>
+
+  <div *ngIf="mobileOpen" class="fixed inset-0 z-50 lg:hidden">
+    <button
+      type="button"
+      class="absolute inset-0 h-full w-full cursor-default bg-[var(--ml-overlay)]"
+      aria-label="Fermer la navigation"
+      (click)="closeMobile()">
+    </button>
+    <aside
+      class="absolute inset-y-0 left-0 w-[min(86vw,var(--ml-sidebar-width))] border-r border-[var(--ml-border)] bg-[var(--ml-surface)] shadow-[var(--ml-shadow-md)]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Navigation mobile"
+      cdkTrapFocus
+      [cdkTrapFocusAutoCapture]="true">
+      <button
+        type="button"
+        class="absolute right-3 top-4 z-10 grid size-10 place-items-center rounded-[var(--ml-radius-sm)] text-[var(--ml-text-muted)] hover:bg-[var(--ml-surface-hover)] hover:text-[var(--ml-text-primary)]"
+        aria-label="Fermer la navigation"
+        cdkFocusInitial
+        (click)="closeMobile()">
+        <app-icon name="x" size="20"></app-icon>
+      </button>
+      <app-sidebar
+        [heading]="sectionLabel"
+        [roleLabel]="roleLabel"
+        [items]="navigation"
+        [mobile]="true"
+        (itemSelected)="closeMobile()">
+      </app-sidebar>
+    </aside>
+  </div>
+</div>

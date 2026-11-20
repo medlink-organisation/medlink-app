@@ -7,15 +7,13 @@ import { App } from './app';
 import { AuthService } from './core/auth/auth.service';
 import { authInterceptor } from './core/auth/auth-interceptor';
 import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
-import { AccessDeniedPageComponent } from './pages/auth/access-denied/access-denied.component';
 import { LoginComponent } from './pages/auth/login/login.component';
 
 @NgModule({
   declarations: [
     App,
     LoginComponent,
-    AccessDeniedComponent,
-    AccessDeniedPageComponent
+    AccessDeniedComponent
   ],
   imports: [
     BrowserModule,

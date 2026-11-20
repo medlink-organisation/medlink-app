@@ -1,0 +1,23 @@
+<header class="sticky top-0 z-30 flex h-[var(--ml-topbar-height)] items-center border-b border-[var(--ml-border)] bg-[color-mix(in_srgb,var(--ml-surface)_94%,transparent)] px-[var(--ml-page-gutter)] backdrop-blur-md">
+  <div class="flex w-full min-w-0 items-center gap-3">
+    <button
+      type="button"
+      class="grid size-10 shrink-0 place-items-center rounded-[var(--ml-radius-sm)] border border-[var(--ml-border)] text-[var(--ml-text-secondary)] hover:bg-[var(--ml-surface-hover)] hover:text-[var(--ml-text-primary)] lg:hidden"
+      aria-label="Ouvrir la navigation"
+      (click)="menuToggle.emit()">
+      <app-icon name="menu" size="20"></app-icon>
+    </button>
+    <div class="min-w-0 flex-1">
+      <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
+    </div>
+    <button
+      type="button"
+      class="hidden size-10 place-items-center rounded-[var(--ml-radius-sm)] text-[var(--ml-text-muted)] sm:grid"
+      aria-label="Notifications indisponibles"
+      title="Les notifications seront disponibles prochainement"
+      disabled>
+      <app-icon name="bell" size="19"></app-icon>
+    </button>
+    <app-user-menu [roleLabel]="roleLabel" [profileRoute]="profileRoute"></app-user-menu>
+  </div>
+</header>

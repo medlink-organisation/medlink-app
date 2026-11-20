@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-page-header',
@@ -8,4 +9,5 @@ import { Component, Input } from '@angular/core';
 export class PageHeaderComponent {
   @Input() title = '';
   @Input() subtitle = '';
+  @Input() breadcrumbs: BreadcrumbItem[] = [];
 }

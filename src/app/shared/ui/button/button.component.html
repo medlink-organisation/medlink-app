@@ -1,15 +1,13 @@
 <button
   hlmBtn
-  [variant]="variant"
-  [size]="size"
+  [variant]="primitiveVariant"
+  [size]="primitiveSize"
   [disabled]="disabled || loading"
   [type]="type"
   [attr.aria-busy]="loading"
+  [attr.aria-label]="ariaLabel || null"
+  class="min-h-10 rounded-[var(--ml-radius-sm)] px-4 transition-[background-color,border-color,color,box-shadow,transform] duration-150"
 >
-  <span
-    *ngIf="loading"
-    class="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent"
-    aria-hidden="true"
-  ></span>
+  <app-icon *ngIf="loading" name="loader" size="16" class="animate-spin" aria-hidden="true"></app-icon>
   <ng-content></ng-content>
 </button>

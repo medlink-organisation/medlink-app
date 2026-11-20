@@ -1,10 +1,11 @@
 <div class="relative">
+  <app-icon name="search" size="17" class="pointer-events-none absolute inset-y-0 left-3 my-auto text-[var(--ml-text-muted)]"></app-icon>
   <input
     appFormControl
     type="search"
     [formControl]="searchControl"
     [placeholder]="placeholder"
-    class="pr-10"
+    class="pl-10 pr-10"
     aria-label="Rechercher"
   />
   <button
@@ -14,6 +15,6 @@
     aria-label="Effacer la recherche"
     (click)="clear()"
   >
-    ×
+    <app-icon name="x" size="16"></app-icon>
   </button>
 </div>

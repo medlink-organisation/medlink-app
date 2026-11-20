@@ -1,5 +1,5 @@
 <div
-  class="cursor-pointer rounded-lg border-2 border-dashed border-border bg-card p-6 text-center text-card-foreground transition-colors"
+  class="cursor-pointer rounded-[var(--ml-radius-lg)] border-2 border-dashed border-[var(--ml-border-strong)] bg-[var(--ml-surface)] p-6 text-center transition-colors hover:border-[var(--ml-primary)] hover:bg-[var(--ml-primary-soft)]"
   [class.border-primary]="dragOver"
   [class.bg-muted]="dragOver"
   role="button"
@@ -9,9 +9,25 @@
   (keydown.space)="openFilePicker(); $event.preventDefault()"
 >
   <input #fileInput type="file" [accept]="accept" class="sr-only" (change)="onFileInput($event)" />
-  <p class="font-medium">{{ label }}</p>
-  <p class="mt-1 text-sm text-muted-foreground">Glissez un fichier ici ou cliquez pour parcourir.</p>
-  <p *ngIf="selectedFile" class="mt-3 text-sm">
-    {{ selectedFile.name }} <span class="text-muted-foreground">({{ formattedSize }})</span>
-  </p>
+  <span class="mx-auto mb-3 grid size-11 place-items-center rounded-full bg-[var(--ml-primary-soft)] text-[var(--ml-primary)]">
+    <app-icon name="upload" size="22"></app-icon>
+  </span>
+  <p class="mb-0 font-semibold">{{ label }}</p>
+  <p class="mt-1 mb-0 text-sm text-[var(--ml-text-muted)]">Glissez un fichier ici ou cliquez pour parcourir.</p>
+  <p class="mt-2 mb-0 text-xs text-[var(--ml-text-muted)]">{{ accept }} · {{ maxSizeMb }} Mo maximum</p>
+  <div *ngIf="selectedFile" class="mt-4 rounded-[var(--ml-radius-sm)] border border-[var(--ml-border)] bg-[var(--ml-surface-secondary)] p-3 text-left" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="mb-0 truncate text-sm font-medium">{{ selectedFile.name }}</p>
+        <p class="mt-0.5 mb-0 text-xs text-[var(--ml-text-muted)]">{{ formattedSize }}<span *ngIf="stateLabel"> · {{ stateLabel }}</span></p>
+      </div>
+      <button type="button" class="grid size-8 shrink-0 place-items-center rounded-md text-[var(--ml-text-muted)] hover:bg-[var(--ml-neutral-soft)] hover:text-[var(--ml-text-primary)]" aria-label="Retirer le fichier" (click)="clear($event)">
+        <app-icon name="x" size="16"></app-icon>
+      </button>
+    </div>
+    <div *ngIf="state === 'uploading'" class="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--ml-neutral-soft)]" role="progressbar" [attr.aria-valuenow]="progress" aria-valuemin="0" aria-valuemax="100">
+      <div class="h-full rounded-full bg-[var(--ml-primary)] transition-[width]" [style.width.%]="progress"></div>
+    </div>
+    <p *ngIf="message" class="mt-2 mb-0 text-xs text-[var(--ml-text-secondary)]">{{ message }}</p>
+  </div>
 </div>

@@ -8,8 +8,22 @@ import { Component, Input } from '@angular/core';
 export class SkeletonComponent {
   @Input() rows = 3;
   @Input() className = '';
+  @Input() pattern: 'lines' | 'card' | 'table' | 'header' = 'lines';
 
   get rowCount(): number[] {
     return Array.from({ length: Math.max(0, Math.floor(this.rows)) }, (_, index) => index);
+  }
+
+  get rowClass(): string {
+    if (this.pattern === 'table') {
+      return 'h-12 w-full';
+    }
+    if (this.pattern === 'header') {
+      return 'h-6 w-2/3';
+    }
+    if (this.pattern === 'card') {
+      return 'h-5 w-full last:w-1/2';
+    }
+    return 'h-4 w-full';
   }
 }

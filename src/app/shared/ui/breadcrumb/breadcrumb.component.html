@@ -1,0 +1,18 @@
+<nav *ngIf="items.length" aria-label="Fil d’Ariane" class="min-w-0">
+  <ol class="flex min-w-0 items-center gap-1 text-sm text-[var(--ml-text-muted)]">
+    <li *ngFor="let item of items; let last = last" class="flex min-w-0 items-center gap-1">
+      <a
+        *ngIf="item.route && !last; else currentItem"
+        [routerLink]="item.route"
+        class="truncate rounded-sm px-1 py-0.5 transition-colors hover:text-[var(--ml-primary)]">
+        {{ item.label }}
+      </a>
+      <ng-template #currentItem>
+        <span class="truncate px-1 py-0.5" [class.text-[var(--ml-text-secondary)]]="last" [attr.aria-current]="last ? 'page' : null">
+          {{ item.label }}
+        </span>
+      </ng-template>
+      <app-icon *ngIf="!last" name="chevron-right" size="14" aria-hidden="true"></app-icon>
+    </li>
+  </ol>
+</nav>

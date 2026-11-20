@@ -46,7 +46,11 @@ export class AuthService {
 
     try {
       const authenticated = await keycloak.init(keycloakInitOptions);
-      await this.synchronizeState(authenticated, true);
+      // The identity claims required by the application are already present in
+      // the access token. Avoid an additional call to Keycloak's Account API,
+      // which is not needed to bootstrap the SPA and requires separate CORS
+      // permissions on every development origin.
+      await this.synchronizeState(authenticated, false);
     } catch {
       this.stateSignal.set({
         ...INITIAL_STATE,
@@ -166,7 +170,7 @@ export class AuthService {
 
   private registerKeycloakEvents(): void {
     keycloak.onAuthSuccess = () => {
-      void this.synchronizeState(true, true);
+      void this.synchronizeState(true, false);
     };
     keycloak.onAuthRefreshSuccess = () => {
       void this.synchronizeState(true, false);

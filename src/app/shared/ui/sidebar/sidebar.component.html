@@ -1,13 +1,46 @@
-<aside class="flex h-full w-64 flex-col border-r border-border bg-background p-4 text-foreground">
-  <h2 class="mb-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ heading }}</h2>
-  <nav class="space-y-1" aria-label="Navigation latérale">
+<aside class="flex h-full flex-col bg-[var(--ml-surface)] text-[var(--ml-text-primary)]">
+  <div class="flex h-[var(--ml-topbar-height)] shrink-0 items-center border-b border-[var(--ml-border)] px-4" [class.justify-center]="collapsed && !mobile">
+    <div class="flex min-w-0 items-center gap-3">
+      <span class="grid size-10 shrink-0 place-items-center rounded-[var(--ml-radius-md)] bg-[var(--ml-primary)] text-white shadow-[var(--ml-shadow-xs)]">
+        <app-icon name="stethoscope" size="21"></app-icon>
+      </span>
+      <div *ngIf="!collapsed || mobile" class="min-w-0">
+        <p class="mb-0 text-base font-bold tracking-tight">MedLink</p>
+        <p class="mt-0.5 mb-0 truncate text-xs text-[var(--ml-text-muted)]">{{ roleLabel || heading }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto px-3 py-5 ml-scrollbar">
+    <h2 *ngIf="!collapsed || mobile" class="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ml-text-muted)]">{{ heading }}</h2>
+    <nav class="space-y-1" aria-label="Navigation principale">
     <a
       *ngFor="let item of items"
       [routerLink]="item.route"
-      routerLinkActive="bg-muted text-foreground"
-      class="flex items-center rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+      routerLinkActive="ml-nav-item-active"
+      [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+      class="ml-nav-item"
+      [class.justify-center]="collapsed && !mobile"
+      [attr.aria-label]="collapsed && !mobile ? item.label : null"
+      [title]="collapsed && !mobile ? item.label : ''"
+      (click)="itemSelected.emit()"
     >
-      <span *ngIf="item.icon" aria-hidden="true" class="mr-2">{{ item.icon }}</span>{{ item.label }}
+      <app-icon *ngIf="item.icon" [name]="item.icon" size="19"></app-icon>
+      <span *ngIf="!collapsed || mobile" class="truncate">{{ item.label }}</span>
     </a>
-  </nav>
+    </nav>
+  </div>
+
+  <div *ngIf="!mobile" class="shrink-0 border-t border-[var(--ml-border)] p-3">
+    <button
+      type="button"
+      class="ml-nav-item w-full"
+      [class.justify-center]="collapsed"
+      [attr.aria-label]="collapsed ? 'Déployer la navigation' : 'Réduire la navigation'"
+      [title]="collapsed ? 'Déployer la navigation' : 'Réduire la navigation'"
+      (click)="collapsedChange.emit(!collapsed)">
+      <app-icon [name]="collapsed ? 'panel-open' : 'panel-close'" size="18"></app-icon>
+      <span *ngIf="!collapsed">Réduire le menu</span>
+    </button>
+  </div>
 </aside>

@@ -9,7 +9,7 @@ import { NavigationItem } from '../../shared/ui/ui-navigation-item';
 })
 export class AdminLayoutComponent {
   readonly items: NavigationItem[] = [
-    { label: 'Tableau de bord', route: '/admin/dashboard', icon: 'dashboard' },
+    { label: 'Tableau de bord', route: '/admin/dashboard', icon: 'dashboard', exact: true },
     { label: 'Praticiens', route: '/admin/practitioners', icon: 'users' },
     { label: 'Spécialités', route: '/admin/specialties', icon: 'tag' },
     { label: 'Créneaux', route: '/admin/creneaux', icon: 'calendar' },

@@ -1,0 +1,43 @@
+<div class="relative">
+  <button
+    type="button"
+    class="flex min-h-11 items-center gap-3 rounded-[var(--ml-radius-md)] px-2 py-1.5 text-left transition-colors hover:bg-[var(--ml-surface-hover)]"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open"
+    aria-label="Ouvrir le menu utilisateur"
+    (click)="toggle()">
+    <app-avatar [name]="displayName" size="sm"></app-avatar>
+    <span class="hidden min-w-0 lg:block">
+      <span class="block max-w-40 truncate text-sm font-semibold text-[var(--ml-text-primary)]">{{ displayName }}</span>
+      <span class="block max-w-40 truncate text-xs text-[var(--ml-text-muted)]">{{ secondaryLabel }}</span>
+    </span>
+    <app-icon name="chevron-down" size="15" class="hidden text-[var(--ml-text-muted)] lg:block"></app-icon>
+  </button>
+
+  <div
+    *ngIf="open"
+    role="menu"
+    class="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-[var(--ml-radius-md)] border border-[var(--ml-border)] bg-[var(--ml-surface-elevated)] p-2 shadow-[var(--ml-shadow-md)]">
+    <div class="border-b border-[var(--ml-border)] px-3 py-2.5">
+      <p class="mb-0 truncate text-sm font-semibold">{{ displayName }}</p>
+      <p class="mt-0.5 mb-0 truncate text-xs text-[var(--ml-text-muted)]">{{ authService.getEmail() || secondaryLabel }}</p>
+    </div>
+    <a
+      *ngIf="profileRoute"
+      role="menuitem"
+      [routerLink]="profileRoute"
+      class="mt-1 flex items-center gap-2 rounded-[var(--ml-radius-sm)] px-3 py-2 text-sm text-[var(--ml-text-secondary)] hover:bg-[var(--ml-surface-hover)] hover:text-[var(--ml-text-primary)]"
+      (click)="close()">
+      <app-icon name="user" size="17"></app-icon>
+      Profil
+    </a>
+    <button
+      type="button"
+      role="menuitem"
+      class="mt-1 flex w-full items-center gap-2 rounded-[var(--ml-radius-sm)] px-3 py-2 text-sm text-[var(--ml-danger)] hover:bg-[var(--ml-danger-soft)]"
+      (click)="logout()">
+      <app-icon name="logout" size="17"></app-icon>
+      Se déconnecter
+    </button>
+  </div>
+</div>

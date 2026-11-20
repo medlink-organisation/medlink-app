@@ -1,0 +1,66 @@
+:root {
+  color-scheme: light;
+  --font-sans: var(--ml-font-sans);
+  --radius: var(--ml-radius-md);
+  --background: var(--ml-background);
+  --foreground: var(--ml-text-primary);
+  --card: var(--ml-surface);
+  --card-foreground: var(--ml-text-primary);
+  --popover: var(--ml-surface-elevated);
+  --popover-foreground: var(--ml-text-primary);
+  --primary: var(--ml-primary);
+  --primary-foreground: var(--ml-text-on-primary);
+  --secondary: var(--ml-surface-secondary);
+  --secondary-foreground: var(--ml-text-primary);
+  --muted: var(--ml-surface-secondary);
+  --muted-foreground: var(--ml-text-muted);
+  --accent: var(--ml-primary-soft);
+  --accent-foreground: var(--ml-primary-strong);
+  --destructive: var(--ml-danger);
+  --border: var(--ml-border);
+  --input: var(--ml-border-strong);
+  --ring: var(--ml-primary);
+  --sidebar: var(--ml-surface);
+  --sidebar-foreground: var(--ml-text-primary);
+  --sidebar-primary: var(--ml-primary);
+  --sidebar-primary-foreground: var(--ml-text-on-primary);
+  --sidebar-accent: var(--ml-primary-soft);
+  --sidebar-accent-foreground: var(--ml-primary-strong);
+  --sidebar-border: var(--ml-border);
+  --sidebar-ring: var(--ml-primary);
+  --chart-1: #155e75;
+  --chart-2: #2563a6;
+  --chart-3: #18794e;
+  --chart-4: #9a6700;
+  --chart-5: #6b5ca5;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: var(--ml-background);
+  --foreground: var(--ml-text-primary);
+  --card: var(--ml-surface);
+  --card-foreground: var(--ml-text-primary);
+  --popover: var(--ml-surface-elevated);
+  --popover-foreground: var(--ml-text-primary);
+  --primary: var(--ml-primary);
+  --primary-foreground: var(--ml-text-on-primary);
+  --secondary: var(--ml-surface-secondary);
+  --secondary-foreground: var(--ml-text-primary);
+  --muted: var(--ml-surface-secondary);
+  --muted-foreground: var(--ml-text-muted);
+  --accent: var(--ml-primary-soft);
+  --accent-foreground: var(--ml-primary-strong);
+  --destructive: var(--ml-danger);
+  --border: var(--ml-border);
+  --input: var(--ml-border-strong);
+  --ring: var(--ml-primary);
+  --sidebar: var(--ml-surface);
+  --sidebar-foreground: var(--ml-text-primary);
+  --sidebar-primary: var(--ml-primary);
+  --sidebar-primary-foreground: var(--ml-text-on-primary);
+  --sidebar-accent: var(--ml-primary-soft);
+  --sidebar-accent-foreground: var(--ml-primary-strong);
+  --sidebar-border: var(--ml-border);
+  --sidebar-ring: var(--ml-primary);
+}

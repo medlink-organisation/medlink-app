@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IconName } from '../icon/icon.component';
 
 @Component({
   selector: 'app-empty-state',
@@ -8,5 +9,7 @@ import { Component, Input } from '@angular/core';
 export class EmptyStateComponent {
   @Input() title = '';
   @Input() description = '';
-  @Input() icon = '';
+  @Input() icon: IconName | '' = '';
+  @Input() actionLabel = '';
+  @Output() action = new EventEmitter<void>();
 }

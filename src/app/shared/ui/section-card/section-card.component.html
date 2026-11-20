@@ -1,0 +1,15 @@
+<section class="rounded-[var(--ml-radius-lg)] border border-[var(--ml-border)] bg-[var(--ml-surface)] shadow-[var(--ml-shadow-xs)]">
+  <header *ngIf="title || description || icon" class="flex items-start justify-between gap-4 border-b border-[var(--ml-border)] px-5 py-4 sm:px-6">
+    <div class="flex min-w-0 items-start gap-3">
+      <span *ngIf="icon" class="mt-0.5 grid size-9 shrink-0 place-items-center rounded-[var(--ml-radius-sm)] bg-[var(--ml-primary-soft)] text-[var(--ml-primary)]">
+        <app-icon [name]="icon" size="18"></app-icon>
+      </span>
+      <div class="min-w-0">
+        <h2 *ngIf="title" class="ml-section-title mb-0">{{ title }}</h2>
+        <p *ngIf="description" class="mt-1 mb-0 text-sm text-[var(--ml-text-muted)]">{{ description }}</p>
+      </div>
+    </div>
+    <div class="shrink-0"><ng-content select="[actions]"></ng-content></div>
+  </header>
+  <div class="p-5 sm:p-6"><ng-content></ng-content></div>
+</section>

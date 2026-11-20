@@ -1,14 +1,16 @@
-<app-skeleton *ngIf="loading" [rows]="5"></app-skeleton>
-<app-empty-state *ngIf="!loading && rows.length === 0" [title]="emptyLabel"></app-empty-state>
-<div *ngIf="!loading && rows.length > 0" hlmTableContainer class="rounded-md border border-border">
-  <table hlmTable>
+<div *ngIf="loading" class="rounded-[var(--ml-radius-lg)] border border-[var(--ml-border)] bg-[var(--ml-surface)] p-4" aria-busy="true" aria-label="Chargement du tableau">
+  <app-skeleton [rows]="5" pattern="table"></app-skeleton>
+</div>
+<app-empty-state *ngIf="!loading && rows.length === 0" icon="search" [title]="emptyLabel" description="Modifiez votre recherche ou vos filtres pour afficher d’autres résultats."></app-empty-state>
+<div *ngIf="!loading && rows.length > 0" hlmTableContainer class="ml-scrollbar overflow-x-auto rounded-[var(--ml-radius-lg)] border border-[var(--ml-border)] bg-[var(--ml-surface)] shadow-[var(--ml-shadow-xs)]">
+  <table hlmTable class="min-w-[42rem]" aria-label="Résultats">
     <thead hlmTHead>
       <tr hlmTr>
         <th *ngFor="let column of columns" hlmTh scope="col">{{ column.label }}</th>
       </tr>
     </thead>
     <tbody hlmTBody>
-      <tr *ngFor="let row of rows; let rowIndex = index" hlmTr (click)="selectRow(row)" class="cursor-pointer">
+      <tr *ngFor="let row of rows; let rowIndex = index" hlmTr (click)="selectRow(row)" (keydown.enter)="selectRow(row)" tabindex="0" class="cursor-pointer transition-colors hover:bg-[var(--ml-surface-hover)] focus-visible:bg-[var(--ml-primary-soft)]">
         <td *ngFor="let column of columns" hlmTd>{{ formatCell(row, column) }}</td>
       </tr>
     </tbody>

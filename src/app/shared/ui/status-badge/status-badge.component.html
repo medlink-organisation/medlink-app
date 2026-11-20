@@ -1,6 +1,4 @@
-<app-badge
-  [variant]="variant"
-  [className]="value === true ? '!bg-emerald-100 !text-emerald-800 dark:!bg-emerald-900/40 dark:!text-emerald-300' : ''"
->
+<app-badge variant="outline" [tone]="presentation.tone">
+  <app-icon [name]="presentation.icon" size="13" [class.animate-spin]="presentation.icon === 'loader'"></app-icon>
   {{ label }}
 </app-badge>

@@ -9,9 +9,8 @@ import { NavigationItem } from '../../shared/ui/ui-navigation-item';
 })
 export class PraticienLayoutComponent {
   readonly items: NavigationItem[] = [
-    { label: 'Tableau de bord', route: '/praticien/dashboard', icon: 'home' },
+    { label: 'Tableau de bord', route: '/praticien/dashboard', icon: 'dashboard', exact: true },
     { label: 'Mes créneaux', route: '/praticien/creneaux', icon: 'calendar' },
     { label: 'Mes rendez-vous', route: '/praticien/rendez-vous', icon: 'clipboard' },
-    { label: 'Mon profil', route: '/praticien/profile', icon: 'user' }
   ];
 }

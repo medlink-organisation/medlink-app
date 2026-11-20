@@ -1,0 +1,13 @@
+<span
+  class="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--ml-border)] bg-[var(--ml-primary-soft)] font-semibold text-[var(--ml-primary-strong)]"
+  [class]="sizeClass"
+  [attr.aria-label]="name || 'Utilisateur MedLink'"
+  role="img">
+  <img
+    *ngIf="imageUrl && !imageFailed"
+    class="h-full w-full object-cover"
+    [src]="imageUrl"
+    [alt]="name || 'Photo de profil'"
+    (error)="imageFailed = true" />
+  <span *ngIf="!imageUrl || imageFailed" aria-hidden="true">{{ initials }}</span>
+</span>

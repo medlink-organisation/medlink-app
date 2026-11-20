@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { IconName } from '../icon/icon.component';
 
 @Component({
   selector: 'app-stat-card',
@@ -8,7 +9,9 @@ import { Component, Input } from '@angular/core';
 export class StatCardComponent {
   @Input() label = '';
   @Input() value: string | number = '';
-  @Input() icon = '';
+  @Input() icon: IconName | '' = '';
   @Input() trend = '';
+  @Input() trendLabel = '';
   @Input() trendPositive = true;
+  @Input() loading = false;
 }

@@ -1,12 +1,21 @@
-<section hlmCard>
-  <div hlmCardContent class="space-y-3">
-    <div class="flex items-start justify-between gap-3">
-      <p class="text-sm text-muted-foreground">{{ label }}</p>
-      <span *ngIf="icon" aria-hidden="true" class="text-xl text-muted-foreground">{{ icon }}</span>
+<section class="min-h-40 rounded-[var(--ml-radius-lg)] border border-[var(--ml-border)] bg-[var(--ml-surface)] p-5 shadow-[var(--ml-shadow-xs)] sm:p-6">
+  <app-skeleton *ngIf="loading" [rows]="3" pattern="card"></app-skeleton>
+  <div *ngIf="!loading" class="flex h-full flex-col justify-between gap-5">
+    <div class="flex items-start justify-between gap-4">
+      <p class="mb-0 text-sm font-medium text-[var(--ml-text-secondary)]">{{ label }}</p>
+      <span *ngIf="icon" class="grid size-10 shrink-0 place-items-center rounded-[var(--ml-radius-md)] bg-[var(--ml-primary-soft)] text-[var(--ml-primary)]">
+        <app-icon [name]="icon" size="20"></app-icon>
+      </span>
     </div>
-    <p class="text-3xl font-semibold tracking-tight">{{ value }}</p>
-    <p *ngIf="trend" class="text-sm" [class.text-green-600]="trendPositive" [class.text-red-600]="!trendPositive">
-      {{ trend }}
-    </p>
+    <div>
+      <p class="mb-0 text-3xl font-bold tracking-tight text-[var(--ml-text-primary)]">{{ value }}</p>
+      <p *ngIf="trend" class="mt-2 mb-0 flex items-center gap-1.5 text-sm text-[var(--ml-text-secondary)]">
+        <span class="inline-flex items-center gap-1 font-semibold" [class.text-[var(--ml-success)]]="trendPositive" [class.text-[var(--ml-danger)]]="!trendPositive">
+          <app-icon [name]="trendPositive ? 'trending-up' : 'trending-down'" size="15"></app-icon>
+          {{ trend }}
+        </span>
+        <span *ngIf="trendLabel">{{ trendLabel }}</span>
+      </p>
+    </div>
   </div>
 </section>
