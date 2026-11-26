@@ -1,0 +1,193 @@
+# Goes in the medlink-app repository: .github/workflows/frontend-ci-cd.yml
+#
+# Same flow as the Spring services:
+#   every push/PR      -> install + build the Angular app
+#   tag vX.Y.Z on main -> build & push ihab0/medlink-frontend:X.Y.Z, scan it,
+#                         then bump values/local/applications/frontend.yaml in GitOps
+#
+# Repository secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, GITOPS_PAT
+# (the same ones medlink-platform uses).
+name: frontend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: ihab0/medlink-frontend
+  GITOPS_REPOSITORY: medlink-organisation/medlink-gitops
+  GITOPS_FILE: values/local/applications/frontend.yaml
+
+jobs:
+  ci:
+    name: Build Angular app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Build
+        # "ng build" uses the production configuration by default.
+        run: npm run build
+
+  docker:
+    name: Publish Docker image
+    needs:
+      - ci
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v4
+
+      - name: Extract and validate version
+        id: version
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version: ${VERSION} (expected a tag like v1.0.0)"
+            exit 1
+          fi
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate short commit SHA
+        id: commit
+        shell: bash
+        run: echo "value=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Verify version does not already exist
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          if docker manifest inspect "${IMAGE_NAME}:${VERSION}" > /dev/null 2>&1; then
+            echo "Docker image ${IMAGE_NAME}:${VERSION} already exists. Create a new version."
+            exit 1
+          fi
+
+      # The Dockerfile builds the app itself (multi-stage) and serves it with nginx.conf.
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.value }}
+            ${{ env.IMAGE_NAME }}:sha-${{ steps.commit.outputs.value }}
+          labels: |
+            org.opencontainers.image.title=medlink-frontend
+            org.opencontainers.image.version=${{ steps.version.outputs.value }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Publish summary
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          echo "## Docker image published" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Image: \`${IMAGE_NAME}:${VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  trivy:
+    name: Scan image with Trivy
+    needs:
+      - docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Scan published image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.version }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+  update-gitops:
+    name: Update frontend in GitOps
+    needs:
+      - docker
+      - trivy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GITOPS_REPOSITORY }}
+          token: ${{ secrets.GITOPS_PAT }}
+          path: gitops
+
+      # yq (mikefarah) is preinstalled on GitHub's ubuntu runners.
+      - name: Update image tag in values file
+        env:
+          VERSION: ${{ needs.docker.outputs.version }}
+        run: |
+          cd gitops
+          yq -i '.image.tag = strenv(VERSION)' "$GITOPS_FILE"
+          cat "$GITOPS_FILE"
+
+      - name: Commit and push
+        env:
+          VERSION: ${{ needs.docker.outputs.version }}
+        run: |
+          cd gitops
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$GITOPS_FILE"
+          if git diff --cached --quiet; then
+            echo "frontend is already using ${VERSION}"
+            exit 0
+          fi
+          git commit -m "chore: bump frontend image to ${VERSION}"
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin main && exit 0
+            git rebase --abort || true
+            sleep $((attempt * 2))
+          done
+          exit 1
