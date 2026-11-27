@@ -29,7 +29,7 @@ export class AdminDashboardComponent implements OnInit {
   ngOnInit(): void {
     forkJoin({
       praticiens: this.praticienService.getAll({ page: 0, size: 1 }).pipe(catchError(() => of(null))),
-      patients: this.patientService.getAll(0, 500).pipe(catchError(() => of(null))),
+      patients: this.patientService.getAll(0, 100).pipe(catchError(() => of(null))),
       cliniques: this.cliniqueService.getAll({ page: 0, size: 1 }).pipe(catchError(() => of(null))),
       rendezVous: this.rendezVousService.getAll({ page: 0, size: 5, sort: 'id,desc' }).pipe(catchError(() => of(null)))
     }).subscribe(({ praticiens, patients, cliniques, rendezVous }) => {
