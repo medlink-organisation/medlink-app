@@ -53,6 +53,30 @@ jobs:
         # "ng build" uses the production configuration by default.
         run: npm run build
 
+
+  trivy:
+    name: Scan image with Trivy
+    needs:
+      - docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Scan published image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.version }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
   docker:
     name: Publish Docker image
     needs:
@@ -124,29 +148,6 @@ jobs:
         run: |
           echo "## Docker image published" >> "$GITHUB_STEP_SUMMARY"
           echo "- Image: \`${IMAGE_NAME}:${VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
-
-  trivy:
-    name: Scan image with Trivy
-    needs:
-      - docker
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Scan published image
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ needs.docker.outputs.version }}
-          format: table
-          exit-code: "1"
-          ignore-unfixed: true
-          vuln-type: os,library
-          severity: CRITICAL,HIGH
 
   update-gitops:
     name: Update frontend in GitOps
