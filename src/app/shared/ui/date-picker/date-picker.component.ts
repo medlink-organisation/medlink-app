@@ -16,6 +16,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 export class DatePickerComponent implements ControlValueAccessor {
   @Input() label = '';
   @Input() placeholder = '';
+  @Input() min = '';
+  @Input() max = '';
 
   value = '';
   disabled = false;

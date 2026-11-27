@@ -22,19 +22,71 @@
   </app-empty-state>
 
   <div *ngIf="!loading && !error" class="grid gap-4">
-    <app-card *ngFor="let item of filteredAppointments(); trackBy: trackById">
+    <app-card *ngFor="let item of filteredAppointments(); trackBy: trackById"
+      class="cursor-pointer" tabindex="0" role="button"
+      (click)="openAppointment(item)" (keydown.enter)="openAppointment(item)">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h3 class="font-semibold">{{ item.type === 'CONTROLE' ? 'Consultation de contrôle' : item.type === 'URGENCE' ? 'Consultation urgente' : 'Consultation' }}</h3>
+          <h3 class="font-semibold">{{ typeLabel(item) }}</h3>
           <p class="mt-1 text-sm text-muted-foreground">
             {{ item.dateDebut | date:'EEEE d MMMM y à HH:mm' }}
           </p>
           <p class="text-sm text-muted-foreground">
-            Praticien {{ item.praticienId }} · Clinique {{ item.cliniqueId }}
+            Cliquez pour consulter le praticien, la spécialité et la clinique.
           </p>
         </div>
         <app-status-badge [value]="item.status"></app-status-badge>
       </div>
     </app-card>
   </div>
+
+  <app-modal #appointmentDialog title="Détails du rendez-vous"
+    description="Consultez ou modifiez votre rendez-vous." size="lg"
+    [closeDisabled]="actionLoading" (closed)="resetDialog()">
+    <app-skeleton *ngIf="detailLoading" [rows]="4"></app-skeleton>
+    <app-alert *ngIf="actionError" variant="destructive" title="Opération impossible">{{ actionError }}</app-alert>
+
+    <ng-container *ngIf="selectedAppointment as item">
+      <div *ngIf="!detailLoading" class="space-y-5">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="font-semibold">{{ typeLabel(item) }}</h3>
+          <app-status-badge [value]="item.status"></app-status-badge>
+        </div>
+
+        <dl class="grid gap-4 text-sm md:grid-cols-2">
+          <div><dt class="text-muted-foreground">Praticien</dt><dd class="font-medium">{{ selectedPraticien?.prenom }} {{ selectedPraticien?.nom }}</dd></div>
+          <div><dt class="text-muted-foreground">Spécialité</dt><dd class="font-medium">{{ selectedSpecialite?.nom || '—' }}</dd></div>
+          <div><dt class="text-muted-foreground">Clinique</dt><dd class="font-medium">{{ selectedClinique?.nom || '—' }}<span *ngIf="selectedClinique?.ville"> · {{ selectedClinique?.ville }}</span></dd></div>
+          <div><dt class="text-muted-foreground">Date</dt><dd class="font-medium">{{ item.dateDebut | date:'dd/MM/yyyy' }}</dd></div>
+          <div><dt class="text-muted-foreground">Horaire</dt><dd class="font-medium">{{ item.dateDebut | date:'HH:mm' }} – {{ item.dateFin | date:'HH:mm' }}</dd></div>
+          <div><dt class="text-muted-foreground">Type</dt><dd class="font-medium">{{ typeLabel(item) }}</dd></div>
+        </dl>
+
+        <section *ngIf="editing" class="space-y-4 border-t border-border pt-4">
+          <app-date-picker label="Nouvelle date" [min]="minRescheduleDate" [max]="maxRescheduleDate"
+            [formControl]="rescheduleDate"></app-date-picker>
+          <app-time-slot-picker [slots]="filteredSlots()" [selectedSlotId]="selectedSlotId"
+            (slotSelected)="selectSlot($event)"></app-time-slot-picker>
+          <app-empty-state *ngIf="!actionLoading && filteredSlots().length === 0"
+            title="Aucun créneau disponible pour cette date"></app-empty-state>
+        </section>
+
+        <div class="flex flex-wrap justify-end gap-3 border-t border-border pt-4">
+          <app-button variant="ghost" [disabled]="actionLoading" (click)="closeAppointment()">Fermer</app-button>
+          <app-button *ngIf="canModify() && !editing" variant="outline" [disabled]="actionLoading"
+            (click)="startEditing()">Modifier</app-button>
+          <app-button *ngIf="canModify() && !editing" variant="destructive" [disabled]="actionLoading"
+            (click)="requestCancel()">Annuler</app-button>
+          <app-button *ngIf="editing" [loading]="actionLoading" [disabled]="!selectedSlotId || actionLoading"
+            (click)="submitReschedule()">Confirmer le nouveau créneau</app-button>
+        </div>
+      </div>
+    </ng-container>
+  </app-modal>
+
+  <app-confirm-dialog #cancelDialog title="Annuler le rendez-vous"
+    message="Confirmez-vous l’annulation de ce rendez-vous ? Le créneau sera libéré."
+    confirmLabel="Annuler le rendez-vous" [destructive]="true" [loading]="actionLoading"
+    (confirmed)="confirmCancel()">
+  </app-confirm-dialog>
 </section>

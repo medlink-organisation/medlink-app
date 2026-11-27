@@ -9,6 +9,22 @@ export interface RendezVous {
   type: TypeRendezVous | null;
 }
 
+export interface AdminRendezVous {
+  id: string;
+  patientId: string;
+  patientNom: string;
+  patientPrenom: string;
+  praticienId: number;
+  praticienNom: string;
+  praticienPrenom: string;
+  creneauId: number;
+  cliniqueId: number;
+  dateDebut: string;
+  dateFin: string;
+  type: TypeRendezVous;
+  status: StatusRendezVous;
+}
+
 export interface CreateRendezVousRequest {
   creneauId: number;
   patientId: number;

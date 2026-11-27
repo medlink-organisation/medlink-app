@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiClientService } from '../core/http/api-client.service';
-import { CreateRendezVousRequest, PageResponse, PageableQuery, PatientRendezVous, PraticienPatient, RendezVous, RendezVousAgenda } from '../models';
+import { AdminRendezVous, CreateRendezVousRequest, PageResponse, PageableQuery, PatientRendezVous, PraticienPatient, RendezVous, RendezVousAgenda } from '../models';
 import { toHttpParams } from './http-params';
 
 @Injectable({ providedIn: 'root' })
@@ -21,7 +21,7 @@ export class RendezVousService {
     return this.api.get(`/scheduling-service/rendez-vous/get-by-id/${encodeURIComponent(id)}`);
   }
 
-  getAll(query: PageableQuery): Observable<PageResponse<RendezVous>> {
+  getAll(query: PageableQuery): Observable<PageResponse<AdminRendezVous>> {
     return this.api.get('/scheduling-service/rendez-vous/getall', toHttpParams(query as Record<string, unknown>));
   }
 

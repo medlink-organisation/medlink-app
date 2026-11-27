@@ -10,6 +10,13 @@ export interface Praticien {
   specialiteId: number | null;
 }
 
+export interface BookingPraticien {
+  id: number;
+  nom: string;
+  prenom: string;
+  specialiteId: number;
+}
+
 export interface CreatePraticienRequest {
   nom: string;
   prenom: string;

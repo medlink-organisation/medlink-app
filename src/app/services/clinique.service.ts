@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiClientService } from '../core/http/api-client.service';
-import { Clinique, CreateCliniqueRequest, PageResponse, PageableQuery, UpdateCliniqueRequest } from '../models';
+import { BookingClinique, Clinique, CreateCliniqueRequest, PageResponse, PageableQuery, UpdateCliniqueRequest } from '../models';
 import { toHttpParams } from './http-params';
 
 @Injectable({ providedIn: 'root' })
@@ -26,8 +26,12 @@ export class CliniqueService {
     return this.api.get(this.basePath, toHttpParams(query as Record<string, unknown>));
   }
 
-  getActiveForBooking(query: PageableQuery): Observable<PageResponse<Clinique>> {
+  getActiveForBooking(query: PageableQuery): Observable<PageResponse<BookingClinique>> {
     return this.api.get(`${this.basePath}/booking/active`, toHttpParams(query as Record<string, unknown>));
+  }
+
+  getForBooking(id: number): Observable<BookingClinique> {
+    return this.api.get(`${this.basePath}/booking/${id}`);
   }
 
   search(keyword: string, query: PageableQuery): Observable<PageResponse<Clinique>> {

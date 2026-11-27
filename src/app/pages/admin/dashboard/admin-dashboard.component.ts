@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 
-import { RendezVous } from '../../../models';
+import { AdminRendezVous } from '../../../models';
 import { CliniqueService } from '../../../services';
 import { PatientAdminService } from '../../../services';
 import { PraticienService } from '../../../services';
@@ -23,7 +23,7 @@ export class AdminDashboardComponent implements OnInit {
   patientCount: number | string = 0;
   cliniqueCount = 0;
   rendezVousCount = 0;
-  recentRendezVous: RendezVous[] = [];
+  recentRendezVous: AdminRendezVous[] = [];
   loading = true;
   error = '';
 
@@ -35,7 +35,7 @@ export class AdminDashboardComponent implements OnInit {
       patients: this.patientService.getAll(0, 100).pipe(catchError(() => of(null))),
       cliniques: this.cliniqueService.getAll({ page: 0, size: 1 }).pipe(catchError(() => of(null))),
       rendezVous: this.rendezVousService
-        .getAll({ page: 0, size: 5, sort: 'createdAt,desc' })
+        .getAll({ page: 0, size: 5, sort: 'creneau.dateDebut,desc' })
         .pipe(catchError(() => of(null))),
     }).subscribe(({ praticiens, patients, cliniques, rendezVous }) => {
       this.praticienCount = praticiens?.totalElements ?? 0;

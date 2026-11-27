@@ -12,11 +12,17 @@
     </thead>
     <tbody hlmTBody>
       <tr *ngFor="let row of rows; let rowIndex = index" hlmTr (click)="selectRow(row)" (keydown.enter)="selectRow(row)" tabindex="0" class="cursor-pointer transition-colors hover:bg-[var(--ml-surface-hover)] focus-visible:bg-[var(--ml-primary-soft)]">
-        <td *ngFor="let column of columns" hlmTd>{{ formatCell(row, column) }}</td>
+        <td *ngFor="let column of columns" hlmTd>
+          <app-status-badge
+            *ngIf="column.statusBadge; else plainCell"
+            [value]="$any(getCellValue(row, column.key)) ?? ''">
+          </app-status-badge>
+          <ng-template #plainCell>{{ formatCell(row, column) }}</ng-template>
+        </td>
         <td *ngIf="rowActions.length" hlmTd class="relative text-right" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
           <div *ngIf="inlineRowActions" class="flex flex-wrap justify-end gap-2" role="group" aria-label="Actions de la ligne">
             <button
-              *ngFor="let action of rowActions"
+              *ngFor="let action of actionsFor(row)"
               type="button"
               class="table-inline-action"
               [class.table-inline-action--danger]="action.destructive"
@@ -32,7 +38,7 @@
             </summary>
             <div class="table-actions__menu" role="menu">
               <button
-                *ngFor="let action of rowActions"
+                *ngFor="let action of actionsFor(row)"
                 type="button"
                 role="menuitem"
                 [class.table-actions__danger]="action.destructive"

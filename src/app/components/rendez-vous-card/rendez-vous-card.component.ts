@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { RendezVous } from '../../models';
+import { AdminRendezVous, RendezVous } from '../../models';
 
 @Component({
   selector: 'app-rendez-vous-card',
@@ -8,7 +8,7 @@ import { RendezVous } from '../../models';
   standalone: false
 })
 export class RendezVousCardComponent {
-  @Input({ required: true }) rendezVous!: RendezVous;
+  @Input({ required: true }) rendezVous!: RendezVous | AdminRendezVous;
   @Output() action = new EventEmitter<{ id: string; action: string }>();
 
   emitAction(action: string): void {

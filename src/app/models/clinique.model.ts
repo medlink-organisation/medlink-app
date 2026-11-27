@@ -12,6 +12,12 @@ export interface Clinique {
   services: ServiceMedicale[];
 }
 
+export interface BookingClinique {
+  id: number;
+  nom: string;
+  ville: string | null;
+}
+
 export interface CreateCliniqueRequest {
   nom: string;
   adresse?: string;

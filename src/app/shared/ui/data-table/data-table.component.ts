@@ -7,6 +7,7 @@ export interface DataTableRowAction {
   label: string;
   icon: IconName;
   destructive?: boolean;
+  visible?: (row: unknown) => boolean;
 }
 
 export interface DataTableRowActionEvent {
@@ -39,6 +40,10 @@ export class DataTableComponent {
   formatCell(row: unknown, column: ColumnDef): string {
     const value = this.getCellValue(row, column.key);
     return column.formatter ? column.formatter(value) : value == null ? '' : String(value);
+  }
+
+  actionsFor(row: unknown): DataTableRowAction[] {
+    return this.rowActions.filter((action) => !action.visible || action.visible(row));
   }
 
   selectRow(row: unknown): void {

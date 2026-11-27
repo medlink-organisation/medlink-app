@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 
 import { ApiClientService } from '../core/http/api-client.service';
 import { PraticienWorkflowTask } from '../models';
+import { toHttpParams } from './http-params';
 
 export interface PatientBookingRequest {
   slotId: number;
@@ -23,6 +24,27 @@ export class WorkflowService {
 
   bookPatientAppointment(request: PatientBookingRequest): Observable<PatientBookingResponse> {
     return this.api.post('/workflow-service/api/patient/appointments', request);
+  }
+
+  cancelPatientAppointment(
+    rendezVousId: string,
+    reason = 'Annulation demandée par le patient'
+  ): Observable<PatientBookingResponse> {
+    return this.api.patch(
+      `/workflow-service/api/patient/appointments/${encodeURIComponent(rendezVousId)}/annuler`,
+      null,
+      toHttpParams({ reason })
+    );
+  }
+
+  reschedulePatientAppointment(
+    rendezVousId: string,
+    newSlotId: number
+  ): Observable<PatientBookingResponse> {
+    return this.api.patch(
+      `/workflow-service/api/patient/appointments/${encodeURIComponent(rendezVousId)}/reporter/${newSlotId}`,
+      null
+    );
   }
 
   getMyTasks(): Observable<PraticienWorkflowTask[]> {

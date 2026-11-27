@@ -6,6 +6,13 @@ export interface Specialite {
   actif: boolean | null;
 }
 
+export interface BookingSpecialite {
+  id: number;
+  code: string;
+  nom: string;
+  description: string | null;
+}
+
 export interface CreateSpecialiteRequest {
   code: string;
   nom: string;

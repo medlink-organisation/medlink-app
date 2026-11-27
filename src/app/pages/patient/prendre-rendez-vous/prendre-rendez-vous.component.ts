@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject }
 import { FormControl } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 
-import { Clinique, Creneau, Praticien, Specialite } from '../../../models';
+import { BookingClinique, BookingPraticien, BookingSpecialite, Creneau } from '../../../models';
 import { AffectationPraticienService } from '../../../services/affectation-praticien.service';
 import { CliniqueService } from '../../../services/clinique.service';
 import { CreneauService } from '../../../services/creneau.service';
@@ -38,13 +38,13 @@ export class PrendreRendezVousComponent implements OnInit {
   readonly reason = new FormControl('', { nonNullable: true });
 
   currentIndex = 0;
-  specialites: Specialite[] = [];
-  cliniques: Clinique[] = [];
-  praticiens: Praticien[] = [];
+  specialites: BookingSpecialite[] = [];
+  cliniques: BookingClinique[] = [];
+  praticiens: BookingPraticien[] = [];
   slots: TimeSlot[] = [];
-  selectedSpecialite: Specialite | null = null;
-  selectedClinique: Clinique | null = null;
-  selectedPraticien: Praticien | null = null;
+  selectedSpecialite: BookingSpecialite | null = null;
+  selectedClinique: BookingClinique | null = null;
+  selectedPraticien: BookingPraticien | null = null;
   selectedSlotId: number | null = null;
   loading = true;
   submitting = false;
@@ -68,14 +68,14 @@ export class PrendreRendezVousComponent implements OnInit {
     });
   }
 
-  selectSpecialite(specialite: Specialite): void {
+  selectSpecialite(specialite: BookingSpecialite): void {
     this.selectedSpecialite = specialite;
     this.selectedClinique = null;
     this.selectedPraticien = null;
     this.selectedSlotId = null;
   }
 
-  selectClinique(clinique: Clinique): void {
+  selectClinique(clinique: BookingClinique): void {
     if (!clinique.id || !this.selectedSpecialite?.id) return;
     this.selectedClinique = clinique;
     this.selectedPraticien = null;
@@ -97,7 +97,7 @@ export class PrendreRendezVousComponent implements OnInit {
     });
   }
 
-  selectPraticien(praticien: Praticien): void {
+  selectPraticien(praticien: BookingPraticien): void {
     if (!praticien.id || !this.selectedClinique?.id) return;
     this.selectedPraticien = praticien;
     this.selectedSlotId = null;

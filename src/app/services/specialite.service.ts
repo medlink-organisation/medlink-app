@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiClientService } from '../core/http/api-client.service';
-import { CreateSpecialiteRequest, PageResponse, PageableQuery, Specialite, UpdateSpecialiteRequest } from '../models';
+import { BookingSpecialite, CreateSpecialiteRequest, PageResponse, PageableQuery, Specialite, UpdateSpecialiteRequest } from '../models';
 import { toHttpParams } from './http-params';
 
 @Injectable({ providedIn: 'root' })
@@ -29,8 +29,12 @@ export class SpecialiteService {
     return this.api.get('/praticien-service/specialites/getall', toHttpParams(query as Record<string, unknown>));
   }
 
-  getActiveForBooking(query: PageableQuery): Observable<PageResponse<Specialite>> {
+  getActiveForBooking(query: PageableQuery): Observable<PageResponse<BookingSpecialite>> {
     return this.api.get('/praticien-service/specialites/booking/active', toHttpParams(query as Record<string, unknown>));
+  }
+
+  getForBooking(id: number): Observable<BookingSpecialite> {
+    return this.api.get(`/praticien-service/specialites/booking/${id}`);
   }
 
   changeStatus(id: number, actif: boolean): Observable<Specialite> {

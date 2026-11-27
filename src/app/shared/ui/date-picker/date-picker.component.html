@@ -3,6 +3,8 @@
     appFormControl
     type="date"
     [attr.placeholder]="placeholder || null"
+    [attr.min]="min || null"
+    [attr.max]="max || null"
     [value]="value"
     [disabled]="disabled"
     (input)="onInput($event)"
