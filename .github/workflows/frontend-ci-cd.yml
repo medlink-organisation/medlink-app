@@ -12,12 +12,12 @@ name: frontend CI/CD
 on:
   push:
     branches:
-      - main
+      - iheb
     tags:
       - "v*.*.*"
   pull_request:
     branches:
-      - main
+      - iheb
   workflow_dispatch:
 
 permissions:
