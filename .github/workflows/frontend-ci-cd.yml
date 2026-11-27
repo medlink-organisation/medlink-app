@@ -151,7 +151,6 @@ jobs:
     name: Update frontend in GitOps
     needs:
       - docker
-      - trivy
     runs-on: ubuntu-latest
 
     steps:
