@@ -2,7 +2,7 @@
 #
 # Same flow as the Spring services:
 #   every push/PR      -> install + build the Angular app
-#   tag vX.Y.Z on main -> build & push medaligd/medlink-frontend:X.Y.Z, scan it,
+#   tag vX.Y.Z on main -> build & push medaligdira/medlink-frontend:X.Y.Z, scan it,
 #                         then bump values/local/applications/frontend.yaml in GitOps
 #
 # Repository secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, GITOPS_PAT
@@ -24,7 +24,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE_NAME: medaligd/medlink-frontend
+  IMAGE_NAME: medaligdira/medlink-frontend
   GITOPS_REPOSITORY: medlink-organisation/medlink-gitops
   GITOPS_FILE: values/local/applications/frontend.yaml
 
