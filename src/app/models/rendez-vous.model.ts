@@ -39,8 +39,9 @@ export interface PatientRendezVous {
 }
 
 export interface PraticienPatient {
-  patientId: number;
+  patientId: string;
   lastRendezVousId: string;
-  lastConsultationAt: string;
+  lastRendezVousAt: string;
   cliniqueId: number;
+  status: StatusRendezVous;
 }

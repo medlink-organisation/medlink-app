@@ -1,60 +1,218 @@
 <section class="space-y-6">
-  <app-page-header title="Mes patients"
-    subtitle="Patients reçus en consultation, dossiers médicaux et résultats d’examens autorisés."></app-page-header>
 
-  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-page-header
+    title="Mes patients"
+    subtitle="Patients ayant un rendez-vous confirmé ou terminé, dossiers médicaux et résultats d’examens autorisés.">
+  </app-page-header>
+
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">
+    {{ error }}
+  </app-alert>
+
   <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
-  <app-empty-state *ngIf="!loading && patients.content.length === 0"
-    title="Aucun patient suivi"
-    description="Un patient apparaît ici après une consultation terminée avec vous."></app-empty-state>
 
-  <div *ngIf="!loading && patients.content.length" class="grid gap-6 lg:grid-cols-[320px_1fr]">
+  <app-empty-state
+    *ngIf="!loading && !error && patients.content.length === 0"
+    title="Aucun patient suivi"
+    description="Les patients ayant un rendez-vous confirmé ou terminé avec vous apparaissent ici.">
+  </app-empty-state>
+
+  <div
+    *ngIf="!loading && patients.content.length"
+    class="grid gap-6 lg:grid-cols-[320px_1fr]">
+
+    <!-- Liste des patients -->
     <div class="space-y-3">
-      <button *ngFor="let patient of patients.content" type="button"
+
+      <button
+        *ngFor="let patient of patients.content"
+        type="button"
         class="w-full rounded-2xl border bg-white p-4 text-left shadow-sm transition hover:border-blue-300"
         [class.border-blue-500]="selected?.patientId === patient.patientId"
         [class.border-slate-200]="selected?.patientId !== patient.patientId"
         (click)="select(patient)">
-        <p class="font-semibold text-slate-900">Patient #{{ patient.patientId }}</p>
-        <p class="mt-1 text-sm text-slate-500">Dernière consultation : {{ patient.lastConsultationAt | date:'dd/MM/yyyy à HH:mm' }}</p>
-        <p class="mt-1 text-xs text-slate-400">Clinique #{{ patient.cliniqueId }}</p>
+
+        <div class="flex items-center justify-between gap-2">
+
+          <p class="font-semibold text-slate-900">
+            Patient #{{ patient.patientId }}
+          </p>
+
+          <span
+            class="rounded-full px-2 py-1 text-xs font-medium"
+            [class.bg-green-100]="patient.status === 'TERMINE'"
+            [class.text-green-700]="patient.status === 'TERMINE'"
+            [class.bg-blue-100]="patient.status === 'CONFIRME'"
+            [class.text-blue-700]="patient.status === 'CONFIRME'">
+
+            {{ patient.status === 'TERMINE'
+            ? 'Terminé'
+            : 'Confirmé' }}
+
+          </span>
+
+        </div>
+
+        <p class="mt-1 text-sm text-slate-500">
+
+          {{ patient.status === 'TERMINE'
+          ? 'Dernière consultation'
+          : 'Rendez-vous confirmé' }} :
+
+          {{ patient.lastRendezVousAt | date:'dd/MM/yyyy à HH:mm' }}
+
+        </p>
+
+        <p class="mt-1 text-xs text-slate-400">
+          Clinique #{{ patient.cliniqueId }}
+        </p>
+
       </button>
-      <app-pagination [currentPage]="patients.number" [pageSize]="patients.size"
-        [totalElements]="patients.totalElements" (pageChange)="onPageChange($event)"></app-pagination>
+
+      <app-pagination
+        [currentPage]="patients.number"
+        [pageSize]="patients.size"
+        [totalElements]="patients.totalElements"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+
     </div>
 
+    <!-- Dossier médical -->
     <app-card>
-      <div *ngIf="!selected" class="py-12 text-center text-sm text-slate-500">
+
+      <!-- Aucun patient sélectionné -->
+      <div
+        *ngIf="!selected"
+        class="py-12 text-center text-sm text-slate-500">
+
         Sélectionnez un patient pour consulter son dossier.
+
       </div>
-      <app-skeleton *ngIf="selected && loadingRecord" [rows]="5"></app-skeleton>
-      <div *ngIf="selected && !loadingRecord && dossier" class="space-y-6">
+
+      <!-- Rendez-vous confirmé -->
+      <div
+        *ngIf="selected?.status === 'CONFIRME'"
+        class="space-y-3 py-12 text-center">
+
+        <p class="font-semibold text-slate-900">
+          Rendez-vous confirmé
+        </p>
+
+        <p class="text-sm text-slate-500">
+          Le dossier médical sera accessible après une
+          consultation terminée, sous réserve des autorisations.
+        </p>
+
+      </div>
+
+      <!-- Chargement du dossier -->
+      <app-skeleton
+        *ngIf="selected?.status === 'TERMINE' && loadingRecord"
+        [rows]="5">
+      </app-skeleton>
+
+      <!-- Consultation terminée -->
+      <div
+        *ngIf="selected?.status === 'TERMINE' && !loadingRecord && dossier"
+        class="space-y-6">
+
         <div class="flex flex-wrap items-start justify-between gap-4">
+
           <div>
-            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">Dossier médical</p>
-            <h2 class="mt-1 text-xl font-semibold text-slate-900">Patient #{{ selected.patientId }}</h2>
-            <p class="mt-1 text-sm text-slate-500">Dossier #{{ dossier.id }} · mis à jour le {{ dossier.derniereModification | date:'dd/MM/yyyy à HH:mm' }}</p>
+
+            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">
+              Dossier médical
+            </p>
+
+            <h2 class="mt-1 text-xl font-semibold text-slate-900">
+              Patient #{{ selected?.patientId }}
+            </h2>
+
+            <p class="mt-1 text-sm text-slate-500">
+              Dossier #{{ dossier.id }}
+              · mis à jour le
+              {{ dossier.derniereModification | date:'dd/MM/yyyy à HH:mm' }}
+            </p>
+
           </div>
+
           <div class="flex flex-wrap gap-2">
-            <app-button variant="outline" [loading]="downloading" (click)="downloadRecord()">Télécharger le PDF</app-button>
-            <a routerLink="/praticien/resultats" class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Ajouter un résultat</a>
+
+            <app-button
+              variant="outline"
+              [loading]="downloading"
+              (click)="downloadRecord()">
+
+              Télécharger le PDF
+
+            </app-button>
+
+            <a
+              routerLink="/praticien/resultats"
+              class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+
+              Ajouter un résultat
+
+            </a>
+
           </div>
+
         </div>
 
+        <!-- Résultats des examens -->
         <div>
-          <h3 class="text-base font-semibold text-slate-900">Résultats des tests</h3>
-          <p *ngIf="resultats.length === 0" class="mt-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Aucun résultat publié.</p>
-          <div *ngIf="resultats.length" class="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200">
-            <div *ngFor="let resultat of resultats" class="p-4">
+
+          <h3 class="text-base font-semibold text-slate-900">
+            Résultats des tests
+          </h3>
+
+          <p
+            *ngIf="resultats.length === 0"
+            class="mt-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+
+            Aucun résultat publié.
+
+          </p>
+
+          <div
+            *ngIf="resultats.length"
+            class="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200">
+
+            <div
+              *ngFor="let resultat of resultats"
+              class="p-4">
+
               <div class="flex flex-wrap items-center justify-between gap-2">
-                <p class="font-medium text-slate-900">{{ resultat.typeExamen }}</p>
-                <span class="text-sm text-slate-500">{{ resultat.dateExamen | date:'dd/MM/yyyy' }}</span>
+
+                <p class="font-medium text-slate-900">
+                  {{ resultat.typeExamen }}
+                </p>
+
+                <span class="text-sm text-slate-500">
+                  {{ resultat.dateExamen | date:'dd/MM/yyyy' }}
+                </span>
+
               </div>
-              <p *ngIf="resultat.conclusion" class="mt-2 text-sm text-slate-600">{{ resultat.conclusion }}</p>
+
+              <p
+                *ngIf="resultat.conclusion"
+                class="mt-2 text-sm text-slate-600">
+
+                {{ resultat.conclusion }}
+
+              </p>
+
             </div>
+
           </div>
+
         </div>
+
       </div>
+
     </app-card>
+
   </div>
+
 </section>

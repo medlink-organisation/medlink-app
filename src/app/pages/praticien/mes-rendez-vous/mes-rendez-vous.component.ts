@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 
 import { PageResponse, RendezVous, RendezVousAgenda } from '../../../models';
-import { RendezVousService } from '../../../services/rendez-vous.service';
+import { RendezVousService } from '../../../services';
 
 @Component({
   selector: 'app-mes-rendez-vous-praticien',

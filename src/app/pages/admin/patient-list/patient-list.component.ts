@@ -1,16 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 
 import { PatientAccount, PatientAccountPage } from '../../../models';
-import { PatientAdminService } from '../../../services/patient-admin.service';
+import { PatientAdminService } from '../../../services';
 
 @Component({
   selector: 'app-patient-list',
   templateUrl: './patient-list.component.html',
-  standalone: false
+  standalone: false,
 })
 export class PatientListComponent implements OnInit {
   private readonly patientService = inject(PatientAdminService);
-
+  private readonly cdr = inject(ChangeDetectorRef);
   page: PatientAccountPage = { content: [], first: 0, max: 20, hasNext: false };
   loading = true;
   error = '';
@@ -36,15 +36,19 @@ export class PatientListComponent implements OnInit {
   private load(first: number): void {
     this.loading = true;
     this.error = '';
+
     this.patientService.getAll(first, this.page.max).subscribe({
       next: (page) => {
         this.page = page;
         this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
         this.error = 'Impossible de charger les patients depuis Keycloak.';
-      }
+        console.error('Erreur Get All Patients:', err);
+        this.cdr.markForCheck();
+      },
     });
   }
 }

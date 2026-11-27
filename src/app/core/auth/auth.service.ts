@@ -39,7 +39,7 @@ export class AuthService {
 
   readonly state = this.stateSignal.asReadonly();
   readonly patientId$: Observable<number | null> = toObservable(this.state).pipe(
-    map(() => this.getPatientId())
+    map(() => this.getPatientId()),
   );
 
   async initialize(): Promise<void> {
@@ -47,17 +47,14 @@ export class AuthService {
 
     try {
       const authenticated = await keycloak.init(keycloakInitOptions);
-      // The identity claims required by the application are already present in
-      // the access token. Avoid an additional call to Keycloak's Account API,
-      // which is not needed to bootstrap the SPA and requires separate CORS
-      // permissions on every development origin.
+
       await this.synchronizeState(authenticated, false);
     } catch {
       this.stateSignal.set({
         ...INITIAL_STATE,
         initialized: true,
         loading: false,
-        error: 'Impossible de contacter le service d’authentification Keycloak.'
+        error: 'Impossible de contacter le service d’authentification Keycloak.',
       });
     }
   }
@@ -70,7 +67,7 @@ export class AuthService {
       this.stateSignal.update((state) => ({
         ...state,
         loading: false,
-        error: 'La redirection vers Keycloak a échoué.'
+        error: 'La redirection vers Keycloak a échoué.',
       }));
       throw new Error('La redirection vers Keycloak a échoué.');
     }
@@ -84,7 +81,7 @@ export class AuthService {
       this.stateSignal.update((state) => ({
         ...state,
         loading: false,
-        error: 'La redirection vers l’inscription Patient a échoué.'
+        error: 'La redirection vers l’inscription Patient a échoué.',
       }));
       throw new Error('La redirection vers l’inscription Patient a échoué.');
     }
@@ -99,7 +96,7 @@ export class AuthService {
       this.stateSignal.update((state) => ({
         ...state,
         loading: false,
-        error: 'La déconnexion Keycloak a échoué.'
+        error: 'La déconnexion Keycloak a échoué.',
       }));
       throw new Error('La déconnexion Keycloak a échoué.');
     }
@@ -111,9 +108,30 @@ export class AuthService {
       return;
     }
 
-    window.location.assign(keycloak.createAccountUrl({
-      redirectUri: this.getSafeRedirectUri('/patient/profil')
-    }));
+    window.location.assign(
+      keycloak.createAccountUrl({
+        redirectUri: this.getSafeRedirectUri('/patient/profil'),
+      }),
+    );
+  }
+  getCurrentUser() {
+    const token = keycloak.tokenParsed;
+
+    if (!keycloak.authenticated || !token) {
+      return null;
+    }
+
+    return {
+      keycloakId: token.sub,
+      username: token['preferred_username'],
+      email: token['email'],
+      firstName: token['given_name'],
+      lastName: token['family_name'],
+      roles: token.realm_access?.roles ?? [],
+      patientId: token['patient_id'] ?? null,
+      praticienId: token['praticien_id'] ?? null,
+      adminId: token['admin_id']??null,
+    };
   }
 
   async changePassword(): Promise<void> {
@@ -124,7 +142,7 @@ export class AuthService {
 
     await keycloak.login({
       action: 'UPDATE_PASSWORD',
-      redirectUri: this.getSafeRedirectUri('/patient/profil')
+      redirectUri: this.getSafeRedirectUri('/patient/profil'),
     });
   }
 
@@ -165,15 +183,6 @@ export class AuthService {
     return this.stateSignal().profile;
   }
 
-  /**
-   * TODO: patient-service integration
-   * When a patient-service is available, replace this method with
-   * a call to GET /patient-service/patients/me using the
-   * authenticated user's keycloakId. The response should contain
-   * the numeric patient ID to store here.
-   * Until then, the token claim 'patient_id' acts as a bridge:
-   * set it in Keycloak via a custom mapper on the medilink client.
-   */
   getPatientId(): number | null {
     const patientId = keycloak.tokenParsed?.['patient_id'];
     return typeof patientId === 'number' && Number.isSafeInteger(patientId) && patientId > 0
@@ -213,9 +222,10 @@ export class AuthService {
   }
 
   reportHttpError(status: 401 | 403): void {
-    const message = status === 401
-      ? 'Votre session n’est plus valide. Veuillez vous reconnecter.'
-      : 'Vous ne disposez pas des permissions nécessaires pour cette action.';
+    const message =
+      status === 401
+        ? 'Votre session n’est plus valide. Veuillez vous reconnecter.'
+        : 'Vous ne disposez pas des permissions nécessaires pour cette action.';
 
     this.stateSignal.update((state) => ({ ...state, error: message }));
   }
@@ -234,7 +244,7 @@ export class AuthService {
       this.stateSignal.update((state) => ({
         ...state,
         loading: false,
-        error: 'L’authentification Keycloak a échoué.'
+        error: 'L’authentification Keycloak a échoué.',
       }));
     };
     keycloak.onAuthRefreshError = () => {
@@ -247,7 +257,10 @@ export class AuthService {
     };
   }
 
-  private async synchronizeState(authenticated: boolean, loadRemoteProfile: boolean): Promise<void> {
+  private async synchronizeState(
+    authenticated: boolean,
+    loadRemoteProfile: boolean,
+  ): Promise<void> {
     if (!authenticated) {
       this.clearRefreshTimer();
       this.stateSignal.set({
@@ -256,7 +269,7 @@ export class AuthService {
         authenticated: false,
         profile: null,
         roles: [],
-        error: null
+        error: null,
       });
       return;
     }
@@ -280,14 +293,15 @@ export class AuthService {
       authenticated: true,
       profile,
       roles,
-      error: null
+      error: null,
     });
     this.scheduleTokenRefresh(token);
   }
 
   private buildProfile(token?: KeycloakTokenParsed, profile?: KeycloakProfile): AuthProfile {
     const emailVerifiedClaim = token?.['email_verified'];
-    const emailVerified = profile?.emailVerified ??
+    const emailVerified =
+      profile?.emailVerified ??
       (typeof emailVerifiedClaim === 'boolean' ? emailVerifiedClaim : undefined);
 
     return {
@@ -295,11 +309,14 @@ export class AuthService {
       email: profile?.email ?? this.readStringClaim(token, 'email'),
       firstName: profile?.firstName ?? this.readStringClaim(token, 'given_name'),
       lastName: profile?.lastName ?? this.readStringClaim(token, 'family_name'),
-      emailVerified
+      emailVerified,
     };
   }
 
-  private readStringClaim(token: KeycloakTokenParsed | undefined, claim: string): string | undefined {
+  private readStringClaim(
+    token: KeycloakTokenParsed | undefined,
+    claim: string,
+  ): string | undefined {
     const value = token?.[claim];
     return typeof value === 'string' ? value : undefined;
   }
@@ -312,9 +329,12 @@ export class AuthService {
 
     const skew = keycloak.timeSkew ?? 0;
     const refreshAt = token.exp * 1000 - Date.now() + skew * 1000 - 60_000;
-    this.refreshTimer = setTimeout(() => {
-      void this.refreshToken(false).catch(() => undefined);
-    }, Math.max(refreshAt, 1_000));
+    this.refreshTimer = setTimeout(
+      () => {
+        void this.refreshToken(false).catch(() => undefined);
+      },
+      Math.max(refreshAt, 1_000),
+    );
   }
 
   private clearRefreshTimer(): void {
@@ -325,9 +345,8 @@ export class AuthService {
   }
 
   private getSafeRedirectUri(returnUrl: string): string {
-    const path = returnUrl.startsWith('/') && !returnUrl.startsWith('//')
-      ? returnUrl
-      : '/patient/dashboard';
+    const path =
+      returnUrl.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/patient/dashboard';
     return new URL(path, window.location.origin).toString();
   }
 }
