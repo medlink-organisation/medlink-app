@@ -1,25 +1,46 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 
-import { PageResponse, RendezVous, RendezVousAgenda } from '../../../models';
+import { PageResponse, RendezVousAgenda } from '../../../models';
+
 import { RendezVousService } from '../../../services';
 
 @Component({
   selector: 'app-mes-rendez-vous-praticien',
   templateUrl: './mes-rendez-vous.component.html',
-  standalone: false
+  standalone: false,
 })
 export class MesRendezVousPraticienComponent implements OnInit {
   private readonly rendezVousService = inject(RendezVousService);
-  rendezVous: PageResponse<RendezVous> = { content: [], totalElements: 0, totalPages: 0, size: 50, number: 0, first: true, last: true };
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  rendezVous: PageResponse<RendezVousAgenda> = {
+    content: [],
+    totalElements: 0,
+    totalPages: 0,
+    size: 50,
+    number: 0,
+    first: true,
+    last: true,
+  };
+
   loading = true;
   error = '';
 
   ngOnInit(): void {
-    const start = new Date(new Date().getFullYear(), 0, 1);
-    const end = new Date(new Date().getFullYear() + 1, 0, 1);
+    this.loadRendezVous();
+  }
 
-    this.rendezVousService.getMyAgenda(start.toISOString(), end.toISOString()).subscribe({
-      next: (appointments: RendezVousAgenda[]) => {
+  private loadRendezVous(): void {
+    this.loading = true;
+    this.error = '';
+
+    const year = new Date().getFullYear();
+
+    const debut = `${year}-01-01T00:00:00`;
+    const fin = `${year + 1}-01-01T00:00:00`;
+
+    this.rendezVousService.getMyAgenda(debut, fin).subscribe({
+      next: (appointments) => {
         this.rendezVous = {
           content: appointments,
           totalElements: appointments.length,
@@ -27,14 +48,21 @@ export class MesRendezVousPraticienComponent implements OnInit {
           size: appointments.length,
           number: 0,
           first: true,
-          last: true
+          last: true,
         };
+
         this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: () => {
+
+      error: (err) => {
+        console.error('Erreur agenda praticien:', err);
+
         this.error = 'Impossible de charger vos rendez-vous.';
         this.loading = false;
-      }
+
+        this.cdr.markForCheck();
+      },
     });
   }
 }
