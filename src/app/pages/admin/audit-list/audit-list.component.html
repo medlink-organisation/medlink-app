@@ -1,0 +1,73 @@
+<section class="space-y-6">
+  <app-page-header
+    title="Historique des créations"
+    subtitle="Consultez les créations enregistrées par les services MedLink.">
+  </app-page-header>
+
+  <app-alert *ngIf="error" variant="destructive" title="Accès à l’historique">{{ error }}</app-alert>
+
+  <div class="admin-audit-toolbar">
+    <div class="admin-tabs" role="tablist" aria-label="Service audité">
+      <button type="button" role="tab" [attr.aria-selected]="source === 'directory'" (click)="setSource('directory')">Cliniques et blocs</button>
+      <button type="button" role="tab" [attr.aria-selected]="source === 'praticien'" (click)="setSource('praticien')">Praticiens et spécialités</button>
+    </div>
+
+    <app-form-field label="Type d’élément">
+      <select appFormControl [value]="entityType" (change)="setEntityType($any($event.target).value)">
+        <option value="">Toutes les créations</option>
+        <option *ngFor="let entity of entities" [value]="entity">{{ entity }}</option>
+      </select>
+    </app-form-field>
+  </div>
+
+  <app-data-table
+    [columns]="columns"
+    [rows]="revisions?.content ?? []"
+    [loading]="loading"
+    emptyLabel="Aucune création enregistrée"
+    (rowClick)="openDetails($event)">
+  </app-data-table>
+
+  <app-pagination
+    *ngIf="revisions"
+    [currentPage]="revisions.number"
+    [pageSize]="revisions.size"
+    [totalElements]="revisions.totalElements"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+
+  <app-modal
+    #historyDialog
+    title="Détail de la création"
+    description="Informations enregistrées dans le journal d’audit."
+    size="lg"
+    (closed)="selectedRevision = null">
+    <ng-container *ngIf="selectedRevision as revision">
+      <dl class="audit-summary">
+        <div><dt>Élément</dt><dd>{{ revision.entityName }} #{{ revision.entityId }}</dd></div>
+        <div><dt>Date</dt><dd>{{ formatDate(revision.timestamp) }}</dd></div>
+        <div><dt>Utilisateur</dt><dd>{{ revision.username || revision.userId || 'Système' }}</dd></div>
+        <div><dt>Service</dt><dd>{{ revision.serviceName }}</dd></div>
+        <div><dt>Révision</dt><dd>#{{ revision.revisionId }}</dd></div>
+        <div><dt>Acteur</dt><dd>{{ revision.actorType }}</dd></div>
+      </dl>
+
+      <div class="mt-6 overflow-x-auto rounded-[var(--ml-radius-md)] border border-[var(--ml-border)]">
+        <table class="audit-changes-table">
+          <thead>
+            <tr><th>Champ</th><th>Valeur créée</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let change of revision.changes">
+              <td>{{ change.fieldName }}</td>
+              <td>{{ formatValue(change.newValue) }}</td>
+            </tr>
+            <tr *ngIf="revision.changes.length === 0">
+              <td colspan="2">Aucun détail de champ disponible.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </app-modal>
+</section>

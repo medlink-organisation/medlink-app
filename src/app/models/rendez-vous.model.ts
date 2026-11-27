@@ -14,3 +14,33 @@ export interface CreateRendezVousRequest {
   patientId: number;
   type: TypeRendezVous;
 }
+
+export interface RendezVousAgenda {
+  id: string;
+  patientId: number;
+  praticienId: number;
+  cliniqueId: number;
+  creneauId: number;
+  dateDebut: string;
+  dateFin: string;
+  status: StatusRendezVous;
+  type: TypeRendezVous;
+}
+
+export interface PatientRendezVous {
+  id: string;
+  creneauId: number;
+  praticienId: number;
+  cliniqueId: number;
+  dateDebut: string;
+  dateFin: string;
+  status: StatusRendezVous;
+  type: TypeRendezVous;
+}
+
+export interface PraticienPatient {
+  patientId: number;
+  lastRendezVousId: string;
+  lastConsultationAt: string;
+  cliniqueId: number;
+}

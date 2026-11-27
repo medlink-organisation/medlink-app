@@ -7,3 +7,14 @@ export interface ServiceMedicale {
   blocId: number | null;
   actif: boolean;
 }
+
+export interface CreateServiceMedicaleRequest {
+  code: string;
+  libelle: string;
+  description?: string;
+  cliniqueId: number;
+  blocId?: number | null;
+  actif?: boolean;
+}
+
+export type UpdateServiceMedicaleRequest = CreateServiceMedicaleRequest;

@@ -1,9 +1,44 @@
-<section class="space-y-6">
-  <app-page-header title="Tableau de bord" subtitle="Votre activité en un coup d'œil"></app-page-header>
-  <app-skeleton *ngIf="loading" [rows]="2"></app-skeleton>
-  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
-  <div *ngIf="!loading" class="grid gap-4 sm:grid-cols-2">
-    <app-stat-card label="Créneaux" [value]="creneauCount" icon="calendar"></app-stat-card>
-    <app-stat-card label="Rendez-vous" [value]="rendezVousCount" icon="clipboard"></app-stat-card>
-  </div>
+<section class="praticien-home">
+  <app-page-header [title]="'Bonjour ' + displayName" subtitle="Votre activité clinique pour les sept prochains jours."></app-page-header>
+  <app-alert *ngIf="error" variant="destructive" title="Chargement partiel">{{ error }}</app-alert>
+  <app-skeleton *ngIf="loading" pattern="card" [rows]="4"></app-skeleton>
+
+  <ng-container *ngIf="!loading">
+    <section class="praticien-home__summary" aria-label="Synthèse du planning">
+      <div><span>Rendez-vous aujourd’hui</span><strong>{{ todayAppointments.length }}</strong></div>
+      <div><span>Créneaux disponibles</span><strong>{{ availableSlotCount }}</strong></div>
+      <div><span>Cliniques cette semaine</span><strong>{{ clinicCount }}</strong></div>
+    </section>
+
+    <div class="praticien-home__layout">
+      <section class="praticien-home__agenda" aria-labelledby="today-agenda-title">
+        <header><div><h2 id="today-agenda-title">Agenda du jour</h2><p>{{ todayAppointments.length }} rendez-vous planifié(s)</p></div><a routerLink="/praticien/rendez-vous">Agenda complet</a></header>
+        <ol *ngIf="todayAppointments.length; else emptyToday" class="praticien-home__timeline">
+          <li *ngFor="let rendezVous of todayAppointments">
+            <time>{{ rendezVous.dateDebut | date:'HH:mm' }}</time>
+            <span class="praticien-home__timeline-marker"></span>
+            <div><strong>{{ rendezVous.type }}</strong><small>Patient #{{ rendezVous.patientId }} · Clinique #{{ rendezVous.cliniqueId }}</small></div>
+            <app-status-badge [value]="rendezVous.status"></app-status-badge>
+          </li>
+        </ol>
+        <ng-template #emptyToday><app-empty-state icon="calendar-x" title="Aucun rendez-vous aujourd’hui" description="Votre agenda ne contient aucune consultation planifiée pour cette journée."></app-empty-state></ng-template>
+      </section>
+
+      <aside class="praticien-home__side">
+        <section aria-labelledby="upcoming-title">
+          <header><div><h2 id="upcoming-title">À venir</h2><p>Prochains rendez-vous</p></div></header>
+          <ul *ngIf="upcomingAppointments.length; else noUpcoming" class="praticien-home__upcoming">
+            <li *ngFor="let rendezVous of upcomingAppointments"><time><strong>{{ rendezVous.dateDebut | date:'dd' }}</strong><span>{{ rendezVous.dateDebut | date:'MMM' }}</span></time><div><strong>{{ rendezVous.dateDebut | date:'HH:mm' }} · {{ rendezVous.type }}</strong><small>Clinique #{{ rendezVous.cliniqueId }}</small></div></li>
+          </ul>
+          <ng-template #noUpcoming><p class="praticien-home__empty">Aucun rendez-vous à venir sur les sept prochains jours.</p></ng-template>
+        </section>
+
+        <nav class="praticien-home__actions" aria-label="Actions du praticien">
+          <a routerLink="/praticien/creneaux"><app-icon name="clock" size="17"></app-icon><span>Consulter mes créneaux</span><app-icon name="chevron-right" size="15"></app-icon></a>
+          <a routerLink="/praticien/patients"><app-icon name="users" size="17"></app-icon><span>Accéder à mes patients</span><app-icon name="chevron-right" size="15"></app-icon></a>
+          <a routerLink="/praticien/resultats"><app-icon name="upload" size="17"></app-icon><span>Déposer un résultat</span><app-icon name="chevron-right" size="15"></app-icon></a>
+        </nav>
+      </aside>
+    </div>
+  </ng-container>
 </section>

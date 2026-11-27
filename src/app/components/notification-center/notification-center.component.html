@@ -1,0 +1,92 @@
+<section class="space-y-6" aria-label="Centre de notifications">
+  <app-page-header
+    title="Notifications"
+    subtitle="Consultez les événements importants liés à votre activité MedLink.">
+    <app-button
+      actions
+      variant="outline"
+      [loading]="markingAll"
+      [disabled]="!hasUnread || loading"
+      (click)="markAllAsRead()">
+      <app-icon name="check" size="17"></app-icon>
+      Tout marquer comme lu
+    </app-button>
+  </app-page-header>
+
+  <app-alert *ngIf="error" variant="destructive" title="Notifications indisponibles">
+    {{ error }}
+    <app-button class="mt-3" variant="outline" size="sm" (click)="load()">Réessayer</app-button>
+  </app-alert>
+
+  <div class="admin-tabs" role="tablist" aria-label="Filtrer les notifications">
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="!unreadOnly"
+      (click)="setFilter(false)">
+      Toutes
+    </button>
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="unreadOnly"
+      (click)="setFilter(true)">
+      Non lues
+    </button>
+  </div>
+
+  <app-skeleton *ngIf="loading && !notifications" pattern="table" [rows]="5"></app-skeleton>
+
+  <app-empty-state
+    *ngIf="!loading && !error && notifications?.content?.length === 0"
+    icon="bell"
+    [title]="unreadOnly ? 'Aucune notification non lue' : 'Aucune notification'"
+    [description]="unreadOnly
+      ? 'Vous avez consulté toutes vos notifications.'
+      : 'Les nouveaux événements importants apparaîtront ici.'">
+  </app-empty-state>
+
+  <ul *ngIf="notifications?.content?.length" class="notification-list" aria-live="polite">
+    <li
+      *ngFor="let notification of notifications!.content; trackBy: trackById"
+      class="notification-item"
+      [class.notification-item--unread]="!notification.read">
+      <span class="notification-item__icon" aria-hidden="true">
+        <app-icon [name]="iconFor(notification.notificationType)" size="20"></app-icon>
+      </span>
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="m-0 text-sm font-semibold text-[var(--ml-text-primary)]">{{ notification.title }}</h2>
+              <app-badge *ngIf="!notification.read" tone="primary">Nouveau</app-badge>
+              <app-badge variant="outline" tone="neutral">{{ typeLabel(notification.notificationType) }}</app-badge>
+            </div>
+            <time class="mt-1 block text-xs text-[var(--ml-text-muted)]" [attr.datetime]="notification.createdAt">
+              {{ notification.createdAt | date:'medium' }}
+            </time>
+          </div>
+          <app-button
+            *ngIf="!notification.read"
+            variant="ghost"
+            size="sm"
+            [loading]="pendingIds.has(notification.id)"
+            [disabled]="pendingIds.has(notification.id)"
+            (click)="markAsRead(notification)">
+            Marquer comme lue
+          </app-button>
+        </div>
+        <p class="mb-0 mt-3 text-sm leading-6 text-[var(--ml-text-secondary)]">{{ notification.message }}</p>
+      </div>
+    </li>
+  </ul>
+
+  <app-pagination
+    *ngIf="notifications && notifications.totalElements > 0"
+    [currentPage]="notifications.number"
+    [pageSize]="notifications.size"
+    [totalElements]="notifications.totalElements"
+    [pageSizeOptions]="[10, 20, 50]"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+</section>

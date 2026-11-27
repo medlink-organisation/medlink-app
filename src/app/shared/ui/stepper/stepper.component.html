@@ -1,0 +1,18 @@
+<nav class="ml-stepper" aria-label="Progression">
+  <ol class="ml-stepper__list">
+    <li
+      *ngFor="let step of steps; let index = index"
+      class="ml-stepper__item"
+      [attr.data-state]="stateFor(index)"
+      [attr.aria-current]="index === currentIndex ? 'step' : null">
+      <span class="ml-stepper__indicator" aria-hidden="true">
+        <app-icon *ngIf="index < currentIndex; else stepNumber" name="check" size="15"></app-icon>
+        <ng-template #stepNumber>{{ index + 1 }}</ng-template>
+      </span>
+      <span class="ml-stepper__copy">
+        <span class="ml-stepper__label">{{ step.label }}</span>
+        <span *ngIf="step.description" class="ml-stepper__description">{{ step.description }}</span>
+      </span>
+    </li>
+  </ol>
+</nav>

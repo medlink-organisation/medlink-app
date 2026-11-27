@@ -1,4 +1,5 @@
 export * from './auth-praticien.service';
+export * from './affectation-praticien.service';
 export * from './creneau.service';
 export * from './http-params';
 export * from './praticien.service';
@@ -6,3 +7,11 @@ export * from './rendez-vous.service';
 export * from './resultat-examen.service';
 export * from './scheduling-internal.service';
 export * from './specialite.service';
+export * from './service-medicale.service';
+export * from './audit.service';
+export * from './bloc.service';
+export * from './clinique.service';
+export * from './notification.service';
+export * from './workflow.service';
+export * from './patient-admin.service';
+export * from './medical-record.service';

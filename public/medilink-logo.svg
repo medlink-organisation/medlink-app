@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MedLink">
+  <defs>
+    <linearGradient id="blue" x1="8" y1="6" x2="55" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#blue)"/>
+  <path fill="#fff" d="M17 43V21h5.2l9.8 12.2L41.8 21H47v22h-6V30.7L32 41.6l-9-10.9V43h-6Z"/>
+  <circle cx="51" cy="13" r="10" fill="#60a5fa" stroke="#fff" stroke-width="3"/>
+  <path d="M51 8v10M46 13h10" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

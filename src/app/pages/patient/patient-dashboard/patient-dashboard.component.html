@@ -1,7 +1,32 @@
-<section class="space-y-6">
-  <app-page-header title="Mon espace" subtitle="Retrouvez le suivi de vos rendez-vous"></app-page-header>
-  <app-skeleton *ngIf="loading" [rows]="1"></app-skeleton>
-  <app-alert *ngIf="noPatientId" variant="destructive">Votre compte patient n'est pas encore configuré.</app-alert>
-  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
-  <app-stat-card *ngIf="!loading && !noPatientId && !error" label="Rendez-vous" [value]="rendezVousCount" icon="clipboard"></app-stat-card>
+<section class="patient-home">
+  <app-page-header [title]="'Bonjour ' + firstName" subtitle="Retrouvez simplement vos démarches et informations de santé."></app-page-header>
+  <app-alert *ngIf="error" variant="destructive" title="Information">{{ error }}</app-alert>
+
+  <section class="patient-home__primary" aria-labelledby="patient-primary-title">
+    <div><span class="patient-home__icon"><app-icon name="calendar" size="21"></app-icon></span><div><h2 id="patient-primary-title">Besoin d’un rendez-vous ?</h2><p>Choisissez un praticien, une disponibilité et confirmez votre demande.</p></div></div>
+    <app-button (click)="navigate('/patient/reservation')">Prendre rendez-vous</app-button>
+  </section>
+
+  <div class="patient-home__layout">
+    <section class="patient-home__panel" aria-labelledby="patient-actions-title">
+      <header><h2 id="patient-actions-title">Mes démarches</h2><p>Accédez directement aux services disponibles.</p></header>
+      <nav class="patient-home__actions" aria-label="Services patient">
+        <button type="button" (click)="navigate('/patient/rendez-vous')"><app-icon name="calendar" size="18"></app-icon><span><strong>Mes rendez-vous</strong><small>À venir et historique</small></span><app-icon name="chevron-right" size="16"></app-icon></button>
+        <button type="button" (click)="navigate('/patient/resultats')"><app-icon name="activity" size="18"></app-icon><span><strong>Mes résultats</strong><small>Consulter les examens disponibles</small></span><app-icon name="chevron-right" size="16"></app-icon></button>
+        <button type="button" (click)="navigate('/patient/dossier-medical')"><app-icon name="file" size="18"></app-icon><span><strong>Mon dossier médical</strong><small>Informations médicales accessibles</small></span><app-icon name="chevron-right" size="16"></app-icon></button>
+        <button type="button" (click)="navigate('/patient/profil')"><app-icon name="user" size="18"></app-icon><span><strong>Mon profil</strong><small>Coordonnées et informations personnelles</small></span><app-icon name="chevron-right" size="16"></app-icon></button>
+      </nav>
+    </section>
+
+    <section class="patient-home__panel" aria-labelledby="patient-notifications-title">
+      <header><div><h2 id="patient-notifications-title">Notifications</h2><p>{{ unreadCount }} non lue(s)</p></div><a routerLink="/patient/notifications">Tout afficher</a></header>
+      <app-skeleton *ngIf="loading" [rows]="3"></app-skeleton>
+      <ul *ngIf="!loading && notifications.length; else noPatientNotifications" class="patient-home__notifications">
+        <li *ngFor="let notification of notifications" [class.patient-home__notification--unread]="!notification.read">
+          <span></span><div><strong>{{ notification.title }}</strong><p>{{ notification.message }}</p><time>{{ notification.createdAt | date:'dd/MM/yyyy à HH:mm' }}</time></div>
+        </li>
+      </ul>
+      <ng-template #noPatientNotifications><app-empty-state *ngIf="!loading" icon="bell" title="Aucune notification" description="Vos rappels et confirmations apparaîtront ici."></app-empty-state></ng-template>
+    </section>
+  </div>
 </section>

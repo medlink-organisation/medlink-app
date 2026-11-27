@@ -1,8 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
 
-import { ColumnDef } from '../../../shared/ui/column-def.model';
-import { Creneau, CreateCreneauRequest, PageResponse, UpdateCreneauRequest } from '../../../models';
+import { Creneau } from '../../../models';
 import { CreneauService } from '../../../services/creneau.service';
 
 @Component({
@@ -10,87 +9,89 @@ import { CreneauService } from '../../../services/creneau.service';
   templateUrl: './mes-creneaux.component.html',
   standalone: false
 })
-export class MesCreneauxComponent implements OnInit {
+export class MesCreneauxComponent implements OnInit, OnDestroy {
   private readonly creneauService = inject(CreneauService);
-  creneaux: PageResponse<Creneau> = { content: [], totalElements: 0, totalPages: 0, size: 10, number: 0, first: true, last: true };
+  private readonly destroy$ = new Subject<void>();
+
+  creneaux: Creneau[] = [];
+  weekStart = this.startOfWeek(new Date());
   loading = false;
-  saving = false;
-  currentPage = 0;
-  pageSize = 10;
-  showForm = false;
-  editTarget: Creneau | null = null;
   error = '';
-  readonly columns: ColumnDef[] = [
-    { key: 'dateDebut', label: 'Début' },
-    { key: 'dateFin', label: 'Fin' },
-    { key: 'statut', label: 'Statut' },
-    { key: 'cliniqueId', label: 'Clinique' }
-  ];
+  statusFilter = '';
 
   ngOnInit(): void {
     this.load();
   }
 
-  onRowClick(row: unknown): void {
-    if (this.isCreneau(row)) {
-      this.editTarget = row;
-      this.showForm = true;
-    }
+  get weekDays(): Date[] {
+    return Array.from({ length: 7 }, (_, index) => this.addDays(this.weekStart, index));
   }
 
-  onPageChange(event: { page: number; size: number }): void {
-    this.currentPage = event.page;
-    this.pageSize = event.size;
+  changeWeek(offset: number): void {
+    this.weekStart = this.addDays(this.weekStart, offset * 7);
     this.load();
   }
 
-  onFormSubmit(request: CreateCreneauRequest | UpdateCreneauRequest): void {
-    this.saving = true;
-    let operation: Observable<Creneau>;
-    if (this.editTarget?.id != null) {
-      operation = this.creneauService.update(this.editTarget.id, request);
-    } else if (this.isCreateRequest(request)) {
-      operation = this.creneauService.create(request);
-    } else {
-      this.saving = false;
-      this.error = 'Les informations saisies sont incomplètes.';
-      return;
-    }
-    operation.subscribe({
-      next: () => {
-        this.saving = false;
-        this.showForm = false;
-        this.editTarget = null;
-        this.load();
-      },
-      error: () => {
-        this.saving = false;
-        this.error = 'Impossible d’enregistrer le créneau.';
-      }
-    });
+  slotsForDay(day: Date): Creneau[] {
+    const key = this.toDateInput(day);
+    return this.creneaux.filter((slot) => slot.dateDebut?.startsWith(key));
+  }
+
+  filteredSlotsForDay(day: Date): Creneau[] {
+    const slots = this.slotsForDay(day);
+    return this.statusFilter ? slots.filter(slot => slot.statut === this.statusFilter) : slots;
+  }
+
+  goToCurrentWeek(): void {
+    this.weekStart = this.startOfWeek(new Date());
+    this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private load(): void {
     this.loading = true;
     this.error = '';
-    this.creneauService.getAll({ page: this.currentPage, size: this.pageSize }).subscribe({
-      next: (page) => {
-        this.creneaux = page;
+    this.creneauService.getMyCalendar(
+      this.toApiDateTime(this.weekStart),
+      this.toApiDateTime(this.addDays(this.weekStart, 7))
+    ).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (creneaux) => {
+        this.creneaux = creneaux;
         this.loading = false;
       },
       error: () => {
         this.loading = false;
-        this.error = 'Impossible de charger vos créneaux.';
+        this.error = 'Impossible de charger vos heures de travail.';
       }
     });
   }
 
-  private isCreneau(value: unknown): value is Creneau {
-    return typeof value === 'object' && value !== null && 'dateDebut' in value;
+  private startOfWeek(value: Date): Date {
+    const date = new Date(value);
+    const day = date.getDay() || 7;
+    date.setDate(date.getDate() - day + 1);
+    date.setHours(0, 0, 0, 0);
+    return date;
   }
 
-  private isCreateRequest(request: CreateCreneauRequest | UpdateCreneauRequest): request is CreateCreneauRequest {
-    return 'praticienId' in request && 'cliniqueId' in request && 'dateDebut' in request && 'dateFin' in request;
+  private addDays(value: Date, count: number): Date {
+    const date = new Date(value);
+    date.setDate(date.getDate() + count);
+    return date;
   }
 
+  private toDateInput(value: Date): string {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private toApiDateTime(value: Date): string {
+    return `${this.toDateInput(value)}T00:00:00`;
+  }
 }

@@ -4,6 +4,7 @@ import { firstValueFrom, of } from 'rxjs';
 
 import { authInterceptor, SKIP_AUTH } from './auth-interceptor';
 import { AuthService } from './auth.service';
+import { environment } from '../../../environments/environment';
 
 describe('authInterceptor', () => {
   const authService = {
@@ -20,7 +21,7 @@ describe('authInterceptor', () => {
   });
 
   it('adds a bearer token to Gateway requests', async () => {
-    const request = new HttpRequest('GET', 'http://localhost:8081/api/profile');
+    const request = new HttpRequest('GET', `${environment.gatewayUrl}/api/profile`);
     let authorization: string | null = null;
 
     await firstValueFrom(TestBed.runInInjectionContext(() => authInterceptor(request, (handledRequest) => {
@@ -44,7 +45,7 @@ describe('authInterceptor', () => {
   });
 
   it('honors the public-request opt-out for Gateway URLs', async () => {
-    const request = new HttpRequest('GET', 'http://localhost:8081/api/public', {
+    const request = new HttpRequest('GET', `${environment.gatewayUrl}/api/public`, {
       context: new HttpContext().set(SKIP_AUTH, true)
     });
     let authorization: string | null = null;

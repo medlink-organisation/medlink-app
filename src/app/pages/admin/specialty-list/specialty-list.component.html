@@ -1,45 +1,34 @@
 <section class="space-y-6">
-  <app-page-header title="Spécialités">
+  <app-page-header title="Catalogue des spécialités" subtitle="Gérez le référentiel médical global, distinct des services médicaux des cliniques.">
     <app-button actions (click)="onNew()">Nouvelle spécialité</app-button>
   </app-page-header>
+
+  <nav class="admin-tabs" aria-label="Sections de configuration">
+    <a routerLink="/admin/cliniques">Gestion des cliniques</a>
+    <a routerLink="/admin/cliniques" [queryParams]="{ section: 'organisation' }">Blocs et services médicaux</a>
+    <a routerLink="/admin/specialties" aria-current="page">Catalogue des spécialités</a>
+  </nav>
 
   <app-alert *ngIf="error" variant="destructive" [title]="error"></app-alert>
 
   <app-search-input (search)="onSearch($event)"></app-search-input>
 
-  <app-specialty-form
-    *ngIf="showForm"
-    [initialValues]="editTarget"
-    [loading]="loading"
-    (formSubmit)="onFormSubmit($event)"
-    (cancelled)="onFormCancel()">
-  </app-specialty-form>
-
   <app-data-table
-    *ngIf="!showForm"
     [columns]="columns"
     [rows]="rows"
     [loading]="loading"
+    [rowActions]="rowActions"
+    (rowAction)="onTableAction($event)"
     (rowClick)="onRowClick($event)">
   </app-data-table>
 
   <app-pagination
-    *ngIf="specialites && !showForm"
+    *ngIf="specialites"
     [currentPage]="specialites.number"
     [pageSize]="specialites.size"
     [totalElements]="specialites.totalElements"
     (pageChange)="onPageChange($event)">
   </app-pagination>
-
-  <div *ngIf="editTarget as selected" class="flex flex-wrap gap-2">
-    <app-button variant="outline" size="sm" (click)="onDeleteRequest(selected.id!)">Supprimer la spécialité</app-button>
-    <app-status-toggle
-      *ngIf="selected.id !== null"
-      [id]="selected.id"
-      [actif]="selected.actif === true"
-      (toggled)="onToggleStatus($event)">
-    </app-status-toggle>
-  </div>
 
   <app-confirm-dialog
     #confirmDelete
@@ -50,4 +39,44 @@
     (confirmed)="onDeleteConfirm()"
     (cancelled)="onDeleteCancel()">
   </app-confirm-dialog>
+
+  <app-modal
+    #specialtyDialog
+    [title]="editTarget ? 'Modifier la spécialité' : 'Créer une spécialité'"
+    description="Définissez le code, le nom et la description de la spécialité."
+    size="lg"
+    [closeDisabled]="loading"
+    (closed)="editTarget = null">
+    <app-alert *ngIf="error" class="mb-4" variant="destructive" title="Enregistrement impossible">{{ error }}</app-alert>
+    <app-specialty-form
+      [initialValues]="editTarget"
+      [loading]="loading"
+      (formSubmit)="onFormSubmit($event)"
+      (cancelled)="onFormCancel()">
+    </app-specialty-form>
+  </app-modal>
+
+  <app-modal
+    #specialtyDetailsDialog
+    title="Détails de la spécialité"
+    description="Informations actuelles et historique complet de l’élément."
+    size="lg"
+    (closed)="detailTarget = null">
+    <ng-container *ngIf="detailTarget as specialty">
+      <app-entity-details-history
+        source="praticien"
+        entityType="specialite"
+        [entityId]="specialty.id"
+        [details]="detailsFor(specialty)">
+      </app-entity-details-history>
+      <div class="mt-5 flex justify-end">
+        <app-status-toggle
+          *ngIf="specialty.id !== null"
+          [id]="specialty.id"
+          [actif]="specialty.actif === true"
+          (toggled)="onToggleStatus($event)">
+        </app-status-toggle>
+      </div>
+    </ng-container>
+  </app-modal>
 </section>

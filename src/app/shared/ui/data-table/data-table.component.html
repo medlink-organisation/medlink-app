@@ -7,11 +7,42 @@
     <thead hlmTHead>
       <tr hlmTr>
         <th *ngFor="let column of columns" hlmTh scope="col">{{ column.label }}</th>
+        <th *ngIf="rowActions.length" hlmTh scope="col" [class]="inlineRowActions ? 'w-40 text-right' : 'w-16 text-right'">Actions</th>
       </tr>
     </thead>
     <tbody hlmTBody>
       <tr *ngFor="let row of rows; let rowIndex = index" hlmTr (click)="selectRow(row)" (keydown.enter)="selectRow(row)" tabindex="0" class="cursor-pointer transition-colors hover:bg-[var(--ml-surface-hover)] focus-visible:bg-[var(--ml-primary-soft)]">
         <td *ngFor="let column of columns" hlmTd>{{ formatCell(row, column) }}</td>
+        <td *ngIf="rowActions.length" hlmTd class="relative text-right" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()">
+          <div *ngIf="inlineRowActions" class="flex flex-wrap justify-end gap-2" role="group" aria-label="Actions de la ligne">
+            <button
+              *ngFor="let action of rowActions"
+              type="button"
+              class="table-inline-action"
+              [class.table-inline-action--danger]="action.destructive"
+              [attr.aria-label]="action.label"
+              [attr.title]="action.label"
+              (click)="performAction(action, row, $event)">
+              <app-icon [name]="action.icon" size="18"></app-icon>
+            </button>
+          </div>
+          <details *ngIf="!inlineRowActions" class="table-actions">
+            <summary aria-label="Ouvrir les actions" title="Actions">
+              <app-icon name="more" size="18"></app-icon>
+            </summary>
+            <div class="table-actions__menu" role="menu">
+              <button
+                *ngFor="let action of rowActions"
+                type="button"
+                role="menuitem"
+                [class.table-actions__danger]="action.destructive"
+                (click)="performAction(action, row, $event)">
+                <app-icon [name]="action.icon" size="16"></app-icon>
+                {{ action.label }}
+              </button>
+            </div>
+          </details>
+        </td>
       </tr>
     </tbody>
   </table>

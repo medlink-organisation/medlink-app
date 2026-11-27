@@ -19,6 +19,7 @@ export class AppShellComponent implements OnInit {
   @Input() roleLabel = '';
   @Input() sectionLabel = 'Navigation';
   @Input() profileRoute = '';
+  @Input() notificationRoute = '';
 
   collapsed = false;
   mobileOpen = false;

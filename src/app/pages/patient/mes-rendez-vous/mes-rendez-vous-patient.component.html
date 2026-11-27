@@ -1,14 +1,40 @@
 <section class="space-y-6">
-  <app-page-header title="Mes rendez-vous"></app-page-header>
-  <app-alert *ngIf="noPatientId" variant="destructive">Votre compte patient n'est pas encore configuré.</app-alert>
+  <app-page-header
+    title="Mes rendez-vous"
+    subtitle="Consultez vos rendez-vous, leur statut et les actions autorisées.">
+  </app-page-header>
+
+  <div class="patient-tabs" role="tablist" aria-label="Filtrer les rendez-vous">
+    <button type="button" role="tab" [attr.aria-selected]="filter === 'upcoming'" (click)="selectFilter('upcoming')">À venir</button>
+    <button type="button" role="tab" [attr.aria-selected]="filter === 'past'" (click)="selectFilter('past')">Passés</button>
+    <button type="button" role="tab" [attr.aria-selected]="filter === 'cancelled'" (click)="selectFilter('cancelled')">Annulés</button>
+    <button type="button" role="tab" [attr.aria-selected]="filter === 'all'" (click)="selectFilter('all')">Tous</button>
+  </div>
+
   <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
   <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
-  <app-empty-state *ngIf="!loading && !noPatientId && !error && rendezVous.content.length === 0" title="Aucun rendez-vous"
-    description="Vos rendez-vous apparaîtront ici."></app-empty-state>
-  <div *ngIf="!loading && !noPatientId && !error" class="grid gap-4">
-    <app-rendez-vous-card *ngFor="let item of rendezVous.content" [rendezVous]="item"></app-rendez-vous-card>
+
+  <app-empty-state
+    *ngIf="!loading && !error && filteredAppointments().length === 0"
+    icon="calendar-x"
+    title="Aucun rendez-vous"
+    description="Aucun rendez-vous ne correspond à ce filtre.">
+  </app-empty-state>
+
+  <div *ngIf="!loading && !error" class="grid gap-4">
+    <app-card *ngFor="let item of filteredAppointments(); trackBy: trackById">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h3 class="font-semibold">{{ item.type === 'CONTROLE' ? 'Consultation de contrôle' : item.type === 'URGENCE' ? 'Consultation urgente' : 'Consultation' }}</h3>
+          <p class="mt-1 text-sm text-muted-foreground">
+            {{ item.dateDebut | date:'EEEE d MMMM y à HH:mm' }}
+          </p>
+          <p class="text-sm text-muted-foreground">
+            Praticien {{ item.praticienId }} · Clinique {{ item.cliniqueId }}
+          </p>
+        </div>
+        <app-status-badge [value]="item.status"></app-status-badge>
+      </div>
+    </app-card>
   </div>
-  <app-pagination *ngIf="!noPatientId && rendezVous.totalElements > 0"
-    [currentPage]="currentPage" [pageSize]="pageSize" [totalElements]="rendezVous.totalElements"
-    (pageChange)="onPageChange($event)"></app-pagination>
 </section>

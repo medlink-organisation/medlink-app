@@ -1,14 +1,31 @@
-<section class="space-y-6">
-  <app-page-header title="Mes créneaux" subtitle="Gérez vos disponibilités">
-    <app-button actions (click)="editTarget = null; showForm = true">Ajouter un créneau</app-button>
-  </app-page-header>
+<section class="creneaux-page creneaux-page--praticien">
+  <app-page-header title="Mes heures de travail" subtitle="Consultez les disponibilités définies par l’administration pour chaque clinique."></app-page-header>
   <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
-  <app-data-table [columns]="columns" [rows]="creneaux.content" [loading]="loading" (rowClick)="onRowClick($event)"></app-data-table>
-  <app-pagination [currentPage]="currentPage" [pageSize]="pageSize"
-    [totalElements]="creneaux.totalElements" (pageChange)="onPageChange($event)"></app-pagination>
-  <app-card *ngIf="showForm">
-    <h2 class="mb-4 text-lg font-semibold">{{ editTarget ? 'Modifier le créneau' : 'Ajouter un créneau' }}</h2>
-    <app-creneau-form [initialValues]="editTarget" [loading]="saving"
-      (formSubmit)="onFormSubmit($event)" (cancelled)="showForm = false; editTarget = null"></app-creneau-form>
-  </app-card>
+
+  <section class="creneaux-page__section" aria-labelledby="my-week-title">
+    <header class="creneaux-page__section-header creneaux-toolbar">
+      <div><h2 id="my-week-title">Semaine du {{ weekStart | date:'dd MMMM yyyy' }}</h2><p>{{ creneaux.length }} créneau(x) planifié(s). Consultation en lecture seule.</p></div>
+      <div class="creneaux-toolbar__controls">
+        <label><span>Statut</span><select [value]="statusFilter" (change)="statusFilter = $any($event.target).value"><option value="">Tous</option><option value="DISPONIBLE">Disponible</option><option value="RESERVE">Réservé</option><option value="BLOQUE">Bloqué</option><option value="INDISPONIBLE">Indisponible</option></select></label>
+        <div class="creneaux-toolbar__navigation"><app-button size="sm" variant="outline" (click)="changeWeek(-1)">Précédente</app-button><app-button size="sm" variant="ghost" (click)="goToCurrentWeek()">Aujourd’hui</app-button><app-button size="sm" variant="outline" (click)="changeWeek(1)">Suivante</app-button></div>
+      </div>
+    </header>
+
+    <app-skeleton *ngIf="loading" [rows]="5"></app-skeleton>
+    <div *ngIf="!loading" class="creneaux-calendar-scroll" tabindex="0" aria-label="Votre calendrier hebdomadaire, défilement horizontal disponible">
+      <div class="creneaux-calendar">
+        <article *ngFor="let day of weekDays" class="creneaux-calendar__day">
+          <header><h3>{{ day | date:'EEEE' }}</h3><time>{{ day | date:'dd/MM' }}</time></header>
+          <div class="creneaux-calendar__slots">
+            <div *ngFor="let slot of filteredSlotsForDay(day)" class="creneaux-time-slot creneaux-time-slot--readonly" [attr.data-status]="slot.statut">
+              <strong>{{ slot.dateDebut | date:'HH:mm' }}–{{ slot.dateFin | date:'HH:mm' }}</strong>
+              <small>Clinique #{{ slot.cliniqueId }}</small>
+              <app-status-badge *ngIf="slot.statut" [value]="slot.statut"></app-status-badge>
+            </div>
+            <p *ngIf="filteredSlotsForDay(day).length === 0" class="creneaux-calendar__empty">Repos</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
 </section>

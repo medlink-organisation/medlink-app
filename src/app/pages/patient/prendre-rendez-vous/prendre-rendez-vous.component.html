@@ -1,14 +1,49 @@
 <section class="space-y-6">
-  <app-page-header title="Prendre un rendez-vous" subtitle="Sélectionnez un créneau disponible"></app-page-header>
-  <app-alert *ngIf="error" variant="destructive" title="Information">{{ error }}</app-alert>
-  <app-alert *ngIf="noPatientId" variant="destructive">Votre compte patient n'est pas encore configuré.</app-alert>
-  <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
-  <app-empty-state *ngIf="!loading && slots.length === 0" title="Aucun créneau disponible"></app-empty-state>
-  <app-time-slot-picker *ngIf="!loading && slots.length > 0" [slots]="slots"
-    [selectedSlotId]="selectedCreneauId" (slotSelected)="onSlotSelected($event)"></app-time-slot-picker>
-  <div class="flex justify-end">
-    <app-button [disabled]="selectedCreneauId === null || patientId === null || saving" [loading]="saving" (click)="onConfirm()">
-      Confirmer
-    </app-button>
-  </div>
+  <app-page-header title="Prendre un rendez-vous" subtitle="Un parcours guidé et sécurisé, du choix du praticien à la confirmation."></app-page-header>
+  <app-stepper [steps]="steps" [currentIndex]="currentIndex"></app-stepper>
+  <app-alert *ngIf="error" variant="destructive" title="Réservation impossible">{{ error }}</app-alert>
+
+  <app-section-card *ngIf="confirmationId; else bookingSteps" title="Rendez-vous confirmé">
+    <div class="space-y-3"><p>Votre rendez-vous a bien été réservé.</p><p class="text-sm text-muted-foreground">Référence : {{ confirmationId }}</p></div>
+  </app-section-card>
+
+  <ng-template #bookingSteps>
+    <app-section-card *ngIf="currentIndex === 0" title="Choisissez une spécialité">
+      <div class="grid gap-3 md:grid-cols-2"><app-selection-card *ngFor="let item of specialites" icon="tag" [title]="item.nom" [description]="item.description ?? ''" [selected]="selectedSpecialite?.id === item.id" (selectionChange)="selectSpecialite(item)"></app-selection-card></div>
+      <app-empty-state *ngIf="!loading && specialites.length === 0" title="Aucune spécialité disponible"></app-empty-state>
+    </app-section-card>
+
+    <app-section-card *ngIf="currentIndex === 1" title="Choisissez une clinique">
+      <div class="grid gap-3 md:grid-cols-2"><app-selection-card *ngFor="let item of cliniques" icon="building" [title]="item.nom ?? 'Clinique'" [description]="item.ville ?? ''" [selected]="selectedClinique?.id === item.id" (selectionChange)="selectClinique(item)"></app-selection-card></div>
+      <app-empty-state *ngIf="!loading && cliniques.length === 0" title="Aucune clinique disponible"></app-empty-state>
+    </app-section-card>
+
+    <app-section-card *ngIf="currentIndex === 2" title="Choisissez un praticien">
+      <div class="grid gap-3 md:grid-cols-2"><app-selection-card *ngFor="let item of praticiens" icon="stethoscope" [title]="item.prenom + ' ' + item.nom" [selected]="selectedPraticien?.id === item.id" (selectionChange)="selectPraticien(item)"></app-selection-card></div>
+      <app-empty-state *ngIf="!loading && praticiens.length === 0" title="Aucun praticien disponible pour ces critères"></app-empty-state>
+    </app-section-card>
+
+    <app-section-card *ngIf="currentIndex === 3" title="Choisissez une date et une heure">
+      <app-time-slot-picker [slots]="slots" [selectedSlotId]="selectedSlotId" (slotSelected)="selectSlot($event)"></app-time-slot-picker>
+      <app-empty-state *ngIf="!loading && slots.length === 0" title="Aucun créneau disponible dans les 60 prochains jours"></app-empty-state>
+    </app-section-card>
+
+    <app-section-card *ngIf="currentIndex === 4" title="Confirmez votre rendez-vous">
+      <div class="space-y-4">
+        <dl class="grid gap-3 text-sm md:grid-cols-2">
+          <div><dt class="text-muted-foreground">Spécialité</dt><dd class="font-medium">{{ selectedSpecialite?.nom }}</dd></div>
+          <div><dt class="text-muted-foreground">Clinique</dt><dd class="font-medium">{{ selectedClinique?.nom }}</dd></div>
+          <div><dt class="text-muted-foreground">Praticien</dt><dd class="font-medium">{{ selectedPraticien?.prenom }} {{ selectedPraticien?.nom }}</dd></div>
+          <div><dt class="text-muted-foreground">Créneau</dt><dd class="font-medium">{{ selectedSlot()?.dateDebut | date:'fullDate' }} · {{ selectedSlot()?.dateDebut | date:'shortTime' }}</dd></div>
+        </dl>
+        <app-form-field label="Motif de consultation (facultatif)"><textarea appFormControl rows="3" maxlength="500" [formControl]="reason"></textarea></app-form-field>
+      </div>
+    </app-section-card>
+
+    <div class="flex justify-between">
+      <app-button variant="ghost" [disabled]="currentIndex === 0 || submitting" (click)="previous()">Retour</app-button>
+      <app-button *ngIf="currentIndex < 4" [disabled]="!canContinue() || loading" [loading]="loading" (click)="next()">Continuer</app-button>
+      <app-button *ngIf="currentIndex === 4" [disabled]="submitting" [loading]="submitting" (click)="confirm()">Confirmer le rendez-vous</app-button>
+    </div>
+  </ng-template>
 </section>

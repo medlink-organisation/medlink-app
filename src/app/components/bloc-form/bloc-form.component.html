@@ -1,0 +1,23 @@
+<app-form [formGroup]="formGroup" (submitted)="submit()">
+  <div class="grid gap-4 md:grid-cols-2">
+    <app-form-field label="Code du bloc" [required]="true" [error]="errorFor('code')">
+      <input appFormControl formControlName="code" maxlength="50" />
+    </app-form-field>
+    <app-form-field label="Nom du bloc" [required]="true" [error]="errorFor('nom')">
+      <input appFormControl formControlName="nom" maxlength="150" />
+    </app-form-field>
+    <app-form-field label="Clinique" class="md:col-span-2" [required]="true" [error]="errorFor('cliniqueId')">
+      <select appFormControl formControlName="cliniqueId">
+        <option [ngValue]="0" disabled>Sélectionner une clinique</option>
+        <option *ngFor="let clinique of cliniques" [ngValue]="clinique.id">{{ clinique.nom }}</option>
+      </select>
+    </app-form-field>
+    <app-form-field label="Description" class="md:col-span-2" [error]="errorFor('description')">
+      <textarea appFormControl formControlName="description" rows="4" maxlength="500"></textarea>
+    </app-form-field>
+  </div>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="loading" (click)="cancelled.emit()">Annuler</app-button>
+    <app-button type="submit" [loading]="loading" [disabled]="loading">Enregistrer</app-button>
+  </div>
+</app-form>

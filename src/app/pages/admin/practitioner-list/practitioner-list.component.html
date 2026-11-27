@@ -4,51 +4,110 @@
   </app-page-header>
 
   <app-alert *ngIf="error" variant="destructive" [title]="error"></app-alert>
+  <app-alert *ngIf="success" variant="default" title="Opération réussie">{{ success }}</app-alert>
 
   <app-search-input (search)="onSearch($event)"></app-search-input>
 
-  <app-practitioner-form
-    *ngIf="showForm"
-    [initialValues]="editTarget"
-    [specialites]="specialites"
-    [loading]="loading"
-    (formSubmit)="onFormSubmit($event)"
-    (cancelled)="onFormCancel()">
-  </app-practitioner-form>
-
   <app-data-table
-    *ngIf="!showForm"
     [columns]="columns"
     [rows]="rows"
     [loading]="loading"
+    [rowActions]="rowActions"
+    [inlineRowActions]="true"
+    (rowAction)="onTableAction($event)"
     (rowClick)="onRowClick($event)">
   </app-data-table>
 
   <app-pagination
-    *ngIf="praticiens && !showForm"
+    *ngIf="praticiens"
     [currentPage]="praticiens.number"
     [pageSize]="praticiens.size"
     [totalElements]="praticiens.totalElements"
     (pageChange)="onPageChange($event)">
   </app-pagination>
 
-  <div *ngIf="editTarget as selected" class="flex flex-wrap gap-2">
-    <app-button variant="outline" size="sm" (click)="onDeleteRequest(selected.id!)">Supprimer le praticien</app-button>
-    <app-status-toggle
-      *ngIf="selected.id !== null"
-      [id]="selected.id"
-      [actif]="selected.actif === true"
-      (toggled)="onToggleStatus($event)">
-    </app-status-toggle>
-  </div>
-
   <app-confirm-dialog
     #confirmDelete
     title="Supprimer le praticien"
-    message="Cette action est irréversible."
+    [message]="deleteConfirmationMessage"
     confirmLabel="Supprimer"
     [destructive]="true"
+    [loading]="loading"
     (confirmed)="onDeleteConfirm()"
     (cancelled)="onDeleteCancel()">
   </app-confirm-dialog>
+
+  <app-modal
+    #practitionerDialog
+    [title]="editTarget ? 'Modifier le praticien' : 'Créer un praticien'"
+    description="Renseignez les informations professionnelles du praticien."
+    size="lg"
+    [closeDisabled]="loading"
+    (closed)="editTarget = null">
+    <app-alert *ngIf="error" class="mb-4" variant="destructive" title="Enregistrement impossible">{{ error }}</app-alert>
+    <app-practitioner-form
+      [initialValues]="editTarget"
+      [specialites]="specialites"
+      [cliniques]="cliniques"
+      [referenceDataLoading]="referenceDataLoading"
+      [referenceDataError]="referenceDataError"
+      [loading]="loading"
+      (formSubmit)="onFormSubmit($event)"
+      (cancelled)="onFormCancel()">
+    </app-practitioner-form>
+  </app-modal>
+
+  <app-modal
+    #practitionerDetailsDialog
+    title="Détails du praticien"
+    description="Informations actuelles et historique complet de l’élément."
+    size="lg"
+    (closed)="detailTarget = null">
+    <ng-container *ngIf="detailTarget as practitioner">
+      <app-entity-details-history
+        source="praticien"
+        entityType="praticien"
+        [entityId]="practitioner.id"
+        [details]="detailsFor(practitioner)">
+      </app-entity-details-history>
+      <section class="mt-6 space-y-4 border-t border-[var(--ml-border)] pt-5" aria-labelledby="practitioner-clinics-title">
+        <div>
+          <h3 id="practitioner-clinics-title" class="text-base font-semibold">Affectations aux cliniques</h3>
+          <p class="text-sm text-[var(--ml-text-muted)]">Ajoutez, désactivez ou réactivez les affectations existantes.</p>
+        </div>
+        <app-alert *ngIf="assignmentError" variant="destructive" title="Affectations indisponibles">{{ assignmentError }}</app-alert>
+        <app-skeleton *ngIf="assignmentsLoading" pattern="card" [rows]="3"></app-skeleton>
+        <div *ngIf="!assignmentsLoading && practitionerAssignments.length" class="ml-assignment-list">
+          <article *ngFor="let assignment of practitionerAssignments" class="ml-assignment-row" [class.ml-assignment-row--inactive]="!assignment.actif || assignment.deleted">
+            <div class="min-w-0 flex-1">
+              <strong>{{ clinicName(assignment) }}</strong>
+              <span>{{ assignment.dateAffectation ? ('Affecté le ' + (assignment.dateAffectation | date:'dd/MM/yyyy')) : 'Date d’affectation indisponible' }}</span>
+            </div>
+            <app-status-badge [value]="assignment.actif && !assignment.deleted"></app-status-badge>
+            <app-button size="sm" variant="outline" [disabled]="assignmentSaving" (click)="toggleAssignment(assignment)">
+              {{ assignment.actif && !assignment.deleted ? 'Désaffecter' : 'Réactiver' }}
+            </app-button>
+          </article>
+        </div>
+        <app-empty-state *ngIf="!assignmentsLoading && practitionerAssignments.length === 0" icon="building" title="Aucune affectation" description="Ce praticien n’est rattaché à aucune clinique."></app-empty-state>
+        <div *ngIf="availableClinics.length" class="ml-assignment-add">
+          <app-form-field label="Ajouter une clinique">
+            <select appFormControl [value]="selectedClinicId" [disabled]="assignmentSaving" (change)="selectedClinicId = $any($event.target).value">
+              <option value="">Choisir une clinique</option>
+              <option *ngFor="let clinique of availableClinics" [value]="clinique.id">{{ clinique.nom }}</option>
+            </select>
+          </app-form-field>
+          <app-button [loading]="assignmentSaving" [disabled]="!selectedClinicId || assignmentSaving" (click)="addAssignment()">Ajouter l’affectation</app-button>
+        </div>
+      </section>
+      <div class="mt-5 flex justify-end">
+        <app-status-toggle
+          *ngIf="practitioner.id !== null"
+          [id]="practitioner.id"
+          [actif]="practitioner.actif === true"
+          (toggled)="onToggleStatus($event)">
+        </app-status-toggle>
+      </div>
+    </ng-container>
+  </app-modal>
 </section>

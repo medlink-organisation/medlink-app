@@ -1,0 +1,15 @@
+<main>
+  <section class="public-page-hero"><div class="public-container"><span class="public-kicker">Contact</span><h1>Comment pouvons-nous vous aider ?</h1><p>Choisissez votre établissement ou envoyez une demande à l’accueil du réseau.</p></div></section>
+  <section class="public-section"><div class="public-container contact-layout">
+    <div class="contact-info"><span class="public-kicker">Nos accueils</span><h2>Un point de contact pour chaque clinique</h2><p>Pour une urgence vitale, contactez directement les services d’urgence de votre région.</p>
+      <div class="contact-clinics"><article><span>01</span><div><h3>MedLink Centre</h3><p>Tunis Centre</p><a href="tel:+21670000001">+216 70 000 001</a></div></article><article><span>02</span><div><h3>MedLink du Lac</h3><p>Les Berges du Lac</p><a href="tel:+21670000002">+216 70 000 002</a></div></article><article><span>03</span><div><h3>MedLink du Cap</h3><p>Cap Bon</p><a href="tel:+21670000003">+216 70 000 003</a></div></article></div>
+    </div>
+    <div class="contact-form-card">
+      @if (submitted()) {
+        <div class="contact-success"><span>✓</span><h2>Votre demande est prête.</h2><p>Le formulaire est actuellement une maquette front-end. Connectez-le au service de messagerie pour transmettre les demandes à l’accueil.</p><button type="button" class="public-button public-button--primary" (click)="submitted.set(false)">Nouvelle demande</button></div>
+      } @else {
+        <form (submit)="submit($event)"><div class="form-heading"><span>Écrivez-nous</span><h2>Votre demande</h2></div><label>Nom complet<input type="text" name="name" autocomplete="name" placeholder="Votre nom" required></label><div class="form-row"><label>E-mail<input type="email" name="email" autocomplete="email" placeholder="nom@exemple.com" required></label><label>Téléphone<input type="tel" name="phone" autocomplete="tel" placeholder="+216 -- --- ---"></label></div><label>Clinique concernée<select name="clinic" required><option value="">Sélectionner une clinique</option><option>MedLink Centre</option><option>MedLink du Lac</option><option>MedLink du Cap</option><option>Je ne sais pas encore</option></select></label><label>Votre message<textarea name="message" rows="5" placeholder="Comment pouvons-nous vous aider ?" required></textarea></label><button type="submit" class="public-button public-button--primary public-button--full">Envoyer la demande</button><small>Ne transmettez pas de données médicales sensibles dans ce formulaire.</small></form>
+      }
+    </div>
+  </div></section>
+</main>

@@ -11,4 +11,8 @@ export class AuthPraticienService {
   register(req: CreatePraticienRequest): Observable<Praticien> {
     return this.api.post('/auth-service/auth/practitioners', req);
   }
+
+  deleteKeycloakAccount(keycloakId: string): Observable<void> {
+    return this.api.delete(`/auth-service/auth/practitioners/${encodeURIComponent(keycloakId)}`);
+  }
 }

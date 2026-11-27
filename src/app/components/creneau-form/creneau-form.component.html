@@ -1,16 +1,17 @@
 <app-form [formGroup]="formGroup" (submitted)="submit()">
+  <app-alert *ngIf="formError" class="mb-4" variant="destructive" title="Créneau invalide">{{ formError }}</app-alert>
   <div class="grid gap-4 md:grid-cols-2">
-    <app-form-field label="ID praticien" [required]="true">
-      <input appFormControl formControlName="praticienId" type="number" min="1" />
+    <app-form-field label="Praticien" [required]="true">
+      <select appFormControl formControlName="praticienId"><option value="">Sélectionner un praticien</option><option *ngFor="let praticien of praticiens" [value]="praticien.id">{{ praticien.prenom }} {{ praticien.nom }}</option></select>
     </app-form-field>
-    <app-form-field label="ID clinique" [required]="true">
-      <input appFormControl formControlName="cliniqueId" type="number" min="1" />
+    <app-form-field label="Clinique" [required]="true">
+      <select appFormControl formControlName="cliniqueId"><option value="">Sélectionner une clinique</option><option *ngFor="let clinique of cliniques" [value]="clinique.id">{{ clinique.nom }}</option></select>
     </app-form-field>
     <app-form-field label="Début" [required]="true">
-      <app-date-picker formControlName="dateDebut" label="Début"></app-date-picker>
+      <input appFormControl type="datetime-local" formControlName="dateDebut" />
     </app-form-field>
     <app-form-field label="Fin" [required]="true">
-      <app-date-picker formControlName="dateFin" label="Fin"></app-date-picker>
+      <input appFormControl type="datetime-local" formControlName="dateFin" />
     </app-form-field>
   </div>
   <div class="mt-5 flex justify-end gap-3">

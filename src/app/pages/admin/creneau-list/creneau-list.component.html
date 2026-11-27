@@ -1,21 +1,108 @@
-<section class="space-y-6">
-  <app-page-header title="Créneaux">
-    <app-button actions (click)="onNew()">Nouveau créneau</app-button>
+<section class="creneaux-page">
+  <app-page-header title="Planning des praticiens" subtitle="Planifiez les disponibilités par praticien et par clinique.">
+    <app-button actions type="button" variant="outline" [disabled]="!selectedPraticienId || selectedDates.size === 0" (click)="openPlanning()"><app-icon name="plus" size="16"></app-icon>Ajouter des créneaux</app-button>
   </app-page-header>
   <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
-  <app-data-table *ngIf="!showForm" [columns]="columns" [rows]="creneaux?.content ?? []"
-    [loading]="loading" (rowClick)="onRowClick($event)"></app-data-table>
-  <app-pagination *ngIf="creneaux && !showForm" [currentPage]="creneaux.number" [pageSize]="creneaux.size"
-    [totalElements]="creneaux.totalElements" (pageChange)="onPageChange($event)"></app-pagination>
-  <app-card *ngIf="showForm">
-    <h2 class="mb-4 text-lg font-semibold">{{ editTarget ? 'Modifier le créneau' : 'Nouveau créneau' }}</h2>
-    <app-creneau-form [initialValues]="editTarget" [loading]="loading"
-      (formSubmit)="onFormSubmit($event)" (cancelled)="onFormCancel()"></app-creneau-form>
-    <div *ngIf="editTarget?.id !== null && editTarget" class="mt-4">
-      <app-button variant="destructive" (click)="onDeleteRequest(editTarget.id!)">Supprimer le créneau</app-button>
+  <app-alert *ngIf="planningMessage" title="Créneaux générés">{{ planningMessage }}</app-alert>
+
+  <section class="creneaux-page__section" aria-labelledby="calendar-title">
+    <header class="creneaux-page__section-header creneaux-toolbar">
+      <div><h2 id="calendar-title">{{ calendarTitle | titlecase }}</h2><p>Sélectionnez directement les dates auxquelles ajouter des créneaux.</p></div>
+    </header>
+    <div class="creneaux-filter-bar">
+      <label><span>Praticien</span><select [formControl]="planningForm.controls.praticienId" (change)="onPraticienChange()"><option value="">Sélectionner</option><option *ngFor="let praticien of praticiens" [value]="praticien.id">{{ praticien.prenom }} {{ praticien.nom }}</option></select></label>
+      <div class="creneaux-filter-bar__period">
+        <label><span>Mois</span><select [value]="calendarStart.getMonth()" (change)="selectMonth(+$any($event.target).value)"><option *ngFor="let month of availableMonthOptions" [value]="month.value">{{ month.label | titlecase }}</option></select></label>
+        <label><span>Année</span><select [value]="calendarStart.getFullYear()" (change)="selectYear(+$any($event.target).value)"><option *ngFor="let year of yearOptions" [value]="year">{{ year }}</option></select></label>
+      </div>
     </div>
-  </app-card>
-  <app-confirm-dialog #confirmDelete title="Supprimer le créneau"
-    message="Cette action est irréversible." confirmLabel="Supprimer"
-    [destructive]="true" (confirmed)="onDeleteConfirm()" (cancelled)="onDeleteCancel()"></app-confirm-dialog>
+
+    <div class="creneaux-calendar-nav">
+      <app-button type="button" size="sm" variant="outline" ariaLabel="Mois précédent" [disabled]="cannotGoPrevious" (click)="changePeriod(-1)">Précédent</app-button>
+      <app-button type="button" size="sm" variant="ghost" (click)="goToToday()">Aujourd’hui</app-button>
+      <app-button type="button" size="sm" variant="outline" ariaLabel="Mois suivant" (click)="changePeriod(1)">Suivant</app-button>
+    </div>
+
+    <div *ngIf="selectedPraticienId" class="creneaux-selection-bar" aria-live="polite">
+      <span><strong>{{ selectedDates.size }}</strong> jour(s) sélectionné(s)</span>
+      <app-button *ngIf="selectedDates.size" type="button" size="sm" variant="ghost" (click)="clearSelectedDates()">Effacer la sélection</app-button>
+    </div>
+
+    <dl *ngIf="selectedPraticienId && monthSummary" class="creneaux-month-stats">
+      <div><dt>Jours travaillés</dt><dd>{{ workedDaysCount }}</dd></div>
+      <div><dt>Jours de congé</dt><dd>{{ leaveDaysCount }}</dd></div>
+      <div><dt>Rendez-vous</dt><dd>{{ appointmentsCount }}</dd></div>
+    </dl>
+
+    <app-skeleton *ngIf="calendarLoading" [rows]="5"></app-skeleton>
+    <app-empty-state *ngIf="!calendarLoading && !selectedPraticienId" title="Sélectionnez un praticien" description="Ses créneaux et rendez-vous s’afficheront ici."></app-empty-state>
+    <div *ngIf="!calendarLoading && selectedPraticienId && monthSummary" class="creneaux-calendar-scroll creneaux-calendar-transition" tabindex="0" aria-label="Calendrier mensuel du praticien">
+      <div class="creneaux-calendar__weekdays" aria-hidden="true"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div>
+      <div class="creneaux-calendar creneaux-calendar--month">
+        <article *ngFor="let day of calendarDays; trackBy: trackCalendarDay" class="creneaux-calendar__day" [class.is-outside]="isOutsideMonth(day)" [class.is-disabled]="isDayDisabled(day)" [class.is-selected]="isDateSelected(day)" [attr.data-planning-status]="summaryForDay(day)?.statutPlanning">
+          <label class="creneaux-date-selector" [class.is-disabled]="!isDateSelectable(day)" (click)="$event.stopPropagation()">
+            <input type="checkbox" [checked]="isDateSelected(day)" [disabled]="!isDateSelectable(day)" (click)="$event.stopPropagation()" (change)="toggleDateSelection(day, $any($event.target).checked)" [attr.aria-label]="'Sélectionner le ' + (day | date:'dd/MM/yyyy')" />
+          </label>
+          <button type="button" class="creneaux-day-summary" [disabled]="isDayDisabled(day)" (click)="selectDay(day)" [attr.aria-label]="'Résumé du ' + (day | date:'dd/MM/yyyy')">
+            <header><time>{{ day | date:'d' }}</time><span *ngIf="summaryForDay(day) as summary" class="creneaux-day-badge" [attr.data-status]="summary.statutPlanning">{{ planningStatusLabel(summary.statutPlanning) }}</span></header>
+            <ng-container *ngIf="summaryForDay(day) as summary">
+              <div class="creneaux-day-ranges" *ngIf="summary.plages.length"><span *ngFor="let range of summary.plages"><strong>{{ range.heureDebut | slice:0:5 }}–{{ range.heureFin | slice:0:5 }}</strong><small>{{ cliniqueName(range.cliniqueId) }}</small></span></div>
+              <p *ngIf="summary.motif" class="creneaux-day-motif">{{ summary.motif }}</p>
+              <footer *ngIf="summary.totalCreneaux > 0"><span class="creneaux-reservation-badge" [attr.data-status]="summary.statutReservation">{{ reservationStatusLabel(summary.statutReservation) }}</span><small>{{ summary.rendezVousReserves }} RDV</small></footer>
+            </ng-container>
+          </button>
+        </article>
+      </div>
+    </div>
+    <div *ngIf="selectedPraticienId && monthSummary" class="creneaux-legend"><span><i class="is-work"></i>Travail</span><span><i class="is-available"></i>Disponible</span><span><i class="is-full"></i>Complet</span><span><i class="is-exception"></i>Indisponible</span><span><i class="is-inactive"></i>Hors période</span></div>
+  </section>
+
+  <app-modal #daySummaryDialog [title]="selectedDateTitle" [description]="selectedPraticienId ? praticienName(selectedPraticienId) : ''" size="md">
+    <app-skeleton *ngIf="dayLoading" [rows]="4"></app-skeleton>
+    <div *ngIf="!dayLoading && selectedDayDetails as details" class="creneaux-day-popup">
+      <div class="creneaux-day-popup__status"><span class="creneaux-day-badge" [attr.data-status]="details.resume.statutPlanning">{{ planningStatusLabel(details.resume.statutPlanning) }}</span><span *ngIf="details.resume.totalCreneaux" class="creneaux-reservation-badge" [attr.data-status]="details.resume.statutReservation">{{ reservationStatusLabel(details.resume.statutReservation) }}</span></div>
+      <p *ngIf="details.resume.motif" class="creneaux-day-popup__motif">{{ details.resume.motif }}</p>
+      <div *ngIf="details.resume.plages.length" class="creneaux-day-popup__ranges"><div *ngFor="let range of details.resume.plages"><strong>{{ range.heureDebut | slice:0:5 }}–{{ range.heureFin | slice:0:5 }}</strong><span>{{ cliniqueName(range.cliniqueId) }}</span></div></div>
+      <dl *ngIf="details.resume.totalCreneaux" class="creneaux-day-stats"><div><dt>Total</dt><dd>{{ details.resume.totalCreneaux }}</dd></div><div><dt>Disponibles</dt><dd>{{ details.resume.creneauxDisponibles }}</dd></div><div><dt>Réservés</dt><dd>{{ details.resume.rendezVousReserves }}</dd></div><div><dt>Bloqués</dt><dd>{{ details.resume.creneauxBloques }}</dd></div></dl>
+      <section *ngIf="details.rendezVous.length" class="creneaux-day-appointments"><h3>Rendez-vous</h3><ul><li *ngFor="let appointment of details.rendezVous | slice:0:5"><time>{{ appointment.heureDebut | slice:0:5 }}</time><span><strong>Patient #{{ appointment.patientId }}</strong><small>{{ cliniqueName(appointment.cliniqueId) }}</small></span><app-status-badge [value]="appointment.statut"></app-status-badge></li></ul><p *ngIf="details.rendezVous.length > 5">{{ details.rendezVous.length - 5 }} autre(s) rendez-vous dans la vue détaillée.</p></section>
+      <div class="creneaux-dialog-actions"><app-button variant="ghost" (click)="daySummaryDialog.hide()">Fermer</app-button><app-button (click)="openDayDetails()">Plus de détails</app-button></div>
+    </div>
+  </app-modal>
+
+  <app-modal #dayDetailDialog [title]="selectedDetailTitle" [description]="selectedPraticienId ? praticienName(selectedPraticienId) : ''" size="lg">
+    <div class="creneaux-day-detail">
+      <div class="creneaux-day-detail__toolbar"><label><span>Clinique</span><select [value]="detailClinicFilter" (change)="detailClinicFilter = $any($event.target).value"><option value="">Toutes</option><option *ngFor="let clinique of assignedCliniques" [value]="clinique.id">{{ clinique.nom }}</option></select></label><label><span>Statut</span><select [value]="detailStatusFilter" (change)="detailStatusFilter = $any($event.target).value"><option value="">Tous</option><option value="DISPONIBLE">Disponible</option><option value="RESERVE">Réservé</option><option value="BLOQUE">Bloqué</option><option value="INDISPONIBLE">Indisponible</option></select></label></div>
+      <app-skeleton *ngIf="detailLoading" [rows]="5"></app-skeleton>
+      <app-empty-state *ngIf="!detailLoading && filteredDetailSlots.length === 0" title="Aucun créneau" description="Aucun créneau ne correspond aux filtres sélectionnés."></app-empty-state>
+      <div *ngIf="!detailLoading && filteredDetailSlots.length" class="creneaux-day-slot-list"><button type="button" *ngFor="let slot of filteredDetailSlots" (click)="onEdit(slot)"><time>{{ slot.dateDebut | date:'HH:mm' }}–{{ slot.dateFin | date:'HH:mm' }}</time><span>{{ cliniqueName(slot.cliniqueId) }}</span><app-status-badge *ngIf="slot.statut" [value]="slot.statut"></app-status-badge><small *ngIf="slot.statut === 'RESERVE'">Rendez-vous protégé</small></button></div>
+      <section *ngIf="selectedDayDetails?.rendezVous?.length" class="creneaux-day-appointments"><h3>Tous les rendez-vous</h3><ul><li *ngFor="let appointment of selectedDayDetails!.rendezVous"><time>{{ appointment.heureDebut | slice:0:5 }}</time><span><strong>Patient #{{ appointment.patientId }}</strong><small>{{ cliniqueName(appointment.cliniqueId) }}</small></span><app-status-badge [value]="appointment.statut"></app-status-badge></li></ul></section>
+      <div class="creneaux-dialog-actions"><app-button variant="ghost" (click)="dayDetailDialog.hide()">Fermer</app-button></div>
+    </div>
+  </app-modal>
+
+  <app-modal #planningDialog title="Ajouter des créneaux" description="Les mêmes horaires et la même clinique seront appliqués aux dates sélectionnées." size="md" [closeDisabled]="planningSaving">
+    <form [formGroup]="planningForm" (ngSubmit)="savePlanning()" class="creneaux-planning-form">
+      <app-alert *ngIf="error" variant="destructive" title="Création impossible">{{ error }}</app-alert>
+      <div class="creneaux-selected-dates">
+        <strong>{{ selectedDates.size }} jour(s) sélectionné(s)</strong>
+        <p>{{ selectedDatesSummary }}</p>
+      </div>
+      <div class="creneaux-planning-meta">
+        <app-form-field label="Heure de début" [required]="true"><input appFormControl type="time" formControlName="heureDebut" /></app-form-field>
+        <app-form-field label="Heure de fin" [required]="true"><input appFormControl type="time" formControlName="heureFin" /></app-form-field>
+        <app-form-field label="Clinique" [required]="true"><select appFormControl formControlName="cliniqueId"><option value="">Sélectionner</option><option *ngFor="let clinique of assignedCliniques" [value]="clinique.id">{{ clinique.nom }}</option></select></app-form-field>
+        <app-form-field label="Durée d’une consultation" [required]="true"><select appFormControl formControlName="dureeConsultation"><option [value]="15">15 minutes</option><option [value]="20">20 minutes</option><option [value]="30">30 minutes</option><option [value]="45">45 minutes</option><option [value]="60">60 minutes</option></select></app-form-field>
+      </div>
+      <app-alert *ngIf="assignedCliniques.length === 0" variant="destructive" title="Aucune clinique affectée">Le praticien doit disposer d’une affectation active avant la création de créneaux.</app-alert>
+      <p class="creneaux-generation-count">{{ slotsToGenerate }} créneau(x) seront créés.</p>
+      <div class="creneaux-dialog-actions"><app-button type="button" variant="ghost" (click)="planningDialog.hide()">Annuler</app-button><app-button type="submit" [loading]="planningSaving" [disabled]="planningSaving || assignedCliniques.length === 0 || slotsToGenerate === 0">Enregistrer</app-button></div>
+    </form>
+  </app-modal>
+
+  <app-confirm-dialog #confirmDelete title="Supprimer le créneau" message="Cette action est irréversible." confirmLabel="Supprimer" [destructive]="true" (confirmed)="onDeleteConfirm()" (cancelled)="onDeleteCancel()"></app-confirm-dialog>
+  <app-modal #creneauDialog [title]="editTarget ? 'Modifier le créneau' : 'Créer un créneau'" description="Définissez le praticien, la clinique et la période du créneau." size="lg" [closeDisabled]="loading" (closed)="editTarget = null">
+    <app-alert *ngIf="error" class="mb-4" variant="destructive" title="Enregistrement impossible">{{ error }}</app-alert>
+    <app-creneau-form [initialValues]="editTarget" [praticiens]="praticiens" [cliniques]="cliniques" [loading]="loading" (formSubmit)="onFormSubmit($event)" (cancelled)="onFormCancel()"></app-creneau-form>
+    <div *ngIf="editTarget?.id !== null && editTarget" class="mt-4 border-t border-[var(--ml-border)] pt-4"><app-button variant="destructive" (click)="onDeleteRequest(editTarget.id!)">Supprimer le créneau</app-button></div>
+  </app-modal>
 </section>

@@ -1,0 +1,43 @@
+<section class="space-y-6">
+  <app-page-header title="Patients"
+    subtitle="Comptes Patient enregistrés dans Keycloak. Les données médicales restent protégées."></app-page-header>
+
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-skeleton *ngIf="loading" [rows]="5"></app-skeleton>
+  <app-empty-state *ngIf="!loading && page.content.length === 0"
+    title="Aucun patient"
+    description="Aucun compte possédant le rôle PATIENT n’a été trouvé."></app-empty-state>
+
+  <div *ngIf="!loading && page.content.length" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-5 py-3">Patient</th>
+            <th class="px-5 py-3">Identifiant</th>
+            <th class="px-5 py-3">E-mail</th>
+            <th class="px-5 py-3">Compte</th>
+            <th class="px-5 py-3">E-mail vérifié</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let patient of page.content" class="text-slate-700">
+            <td class="px-5 py-4 font-medium text-slate-900">{{ fullName(patient) }}</td>
+            <td class="px-5 py-4">{{ patient.username }}</td>
+            <td class="px-5 py-4">{{ patient.email || '—' }}</td>
+            <td class="px-5 py-4"><app-badge [tone]="patient.enabled ? 'success' : 'neutral'">{{ patient.enabled ? 'Actif' : 'Désactivé' }}</app-badge></td>
+            <td class="px-5 py-4">{{ patient.emailVerified ? 'Oui' : 'Non' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && page.content.length" class="flex items-center justify-between">
+    <p class="text-sm text-slate-500">Patients {{ page.first + 1 }} à {{ page.first + page.content.length }}</p>
+    <div class="flex gap-2">
+      <app-button variant="outline" [disabled]="page.first === 0" (click)="previous()">Précédent</app-button>
+      <app-button variant="outline" [disabled]="!page.hasNext" (click)="next()">Suivant</app-button>
+    </div>
+  </div>
+</section>

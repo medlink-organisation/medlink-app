@@ -1,0 +1,118 @@
+<section class="space-y-6">
+  <app-page-header title="Configuration organisationnelle" subtitle="Gérez les cliniques, les blocs, les services médicaux et le catalogue des spécialités.">
+    <app-button *ngIf="activeSection === 'cliniques'" actions (click)="openNewClinique()"><app-icon name="plus" size="17"></app-icon>Nouvelle clinique</app-button>
+  </app-page-header>
+
+  <nav class="admin-tabs" aria-label="Sections de configuration">
+    <button type="button" [attr.aria-current]="activeSection === 'cliniques' ? 'page' : null" (click)="setSection('cliniques')">Gestion des cliniques</button>
+    <button type="button" [attr.aria-current]="activeSection === 'organisation' ? 'page' : null" (click)="setSection('organisation')">Blocs et services médicaux</button>
+    <a routerLink="/admin/specialties">Catalogue des spécialités</a>
+  </nav>
+
+  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-search-input [placeholder]="activeSection === 'cliniques' ? 'Rechercher une clinique...' : 'Rechercher un bloc ou un service...'" (search)="onSearch($event)"></app-search-input>
+
+  <ng-container *ngIf="activeSection === 'cliniques'">
+    <app-data-table [columns]="cliniqueColumns" [rows]="cliniques?.content ?? []" [loading]="loading" [rowActions]="rowActions"
+      emptyLabel="Aucune clinique" (rowAction)="onCliniqueAction($event)" (rowClick)="onCliniqueRow($event)"></app-data-table>
+    <app-pagination *ngIf="cliniques" [currentPage]="cliniques.number" [pageSize]="cliniques.size" [totalElements]="cliniques.totalElements" (pageChange)="onCliniquePage($event)"></app-pagination>
+  </ng-container>
+
+  <div *ngIf="activeSection === 'organisation'" class="space-y-8">
+    <app-section-card title="Blocs" description="Les blocs sont toujours rattachés à une clinique.">
+      <app-button actions (click)="openNewBloc()" [disabled]="cliniqueOptions.length === 0"><app-icon name="plus" size="16"></app-icon>Nouveau bloc</app-button>
+      <app-data-table [columns]="blocColumns" [rows]="blocs?.content ?? []" [loading]="loading" [rowActions]="rowActions"
+        emptyLabel="Aucun bloc" (rowAction)="onBlocAction($event)"></app-data-table>
+      <app-pagination *ngIf="blocs" [currentPage]="blocs.number" [pageSize]="blocs.size" [totalElements]="blocs.totalElements" (pageChange)="onBlocPage($event)"></app-pagination>
+    </app-section-card>
+
+    <app-section-card title="Services médicaux" description="Un service appartient à une clinique et peut être associé à l’un de ses blocs.">
+      <app-button actions (click)="openNewService()" [disabled]="cliniqueOptions.length === 0"><app-icon name="plus" size="16"></app-icon>Nouveau service</app-button>
+      <app-data-table [columns]="serviceColumns" [rows]="services?.content ?? []" [loading]="loading" [rowActions]="manageActions"
+        emptyLabel="Aucun service médical" (rowAction)="onServiceAction($event)"></app-data-table>
+      <app-pagination *ngIf="services" [currentPage]="services.number" [pageSize]="services.size" [totalElements]="services.totalElements" (pageChange)="onServicePage($event)"></app-pagination>
+    </app-section-card>
+  </div>
+
+  <app-modal #cliniqueDialog [title]="editClinique ? 'Modifier la clinique' : 'Créer une clinique'" description="Renseignez les coordonnées administratives de l’établissement."
+    size="lg" [closeDisabled]="saving" (closed)="editClinique = null">
+    <app-alert *ngIf="error" class="mb-4" variant="destructive" title="Enregistrement impossible">{{ error }}</app-alert>
+    <app-clinique-form [initialValues]="editClinique" [loading]="saving" (formSubmit)="saveClinique($event)" (cancelled)="cliniqueDialog.hide()"></app-clinique-form>
+  </app-modal>
+
+  <app-modal #blocDialog [title]="editBloc?.id ? 'Modifier le bloc' : 'Créer un bloc'" description="Associez le bloc à une clinique existante."
+    size="lg" [closeDisabled]="saving" (closed)="editBloc = null">
+    <app-alert *ngIf="error" class="mb-4" variant="destructive" title="Enregistrement impossible">{{ error }}</app-alert>
+    <app-bloc-form [initialValues]="editBloc" [cliniques]="cliniqueOptions" [loading]="saving" (formSubmit)="saveBloc($event)" (cancelled)="blocDialog.hide()"></app-bloc-form>
+  </app-modal>
+
+  <app-modal #serviceDialog [title]="editService ? 'Modifier le service médical' : 'Créer un service médical'"
+    description="Le bloc est facultatif et doit appartenir à la clinique sélectionnée." size="lg" [closeDisabled]="saving" (closed)="editService = null">
+    <app-alert *ngIf="error" class="mb-4" variant="destructive" title="Enregistrement impossible">{{ error }}</app-alert>
+    <app-form [formGroup]="serviceForm" (submitted)="saveService()">
+      <div class="grid gap-4 md:grid-cols-2">
+        <app-form-field label="Code" [required]="true"><input appFormControl formControlName="code" /></app-form-field>
+        <app-form-field label="Libellé" [required]="true"><input appFormControl formControlName="libelle" /></app-form-field>
+        <app-form-field label="Clinique" [required]="true">
+          <select appFormControl formControlName="cliniqueId" (change)="serviceForm.controls.blocId.setValue('')">
+            <option value="">Choisir une clinique</option><option *ngFor="let clinique of cliniqueOptions" [value]="clinique.id">{{ clinique.nom }}</option>
+          </select>
+        </app-form-field>
+        <app-form-field label="Bloc (facultatif)">
+          <select appFormControl formControlName="blocId"><option value="">Aucun bloc</option><option *ngFor="let bloc of blocksForServiceForm()" [value]="bloc.id">{{ bloc.nom }}</option></select>
+        </app-form-field>
+        <app-form-field class="md:col-span-2" label="Description"><textarea appFormControl formControlName="description" rows="3"></textarea></app-form-field>
+      </div>
+      <div class="mt-5 flex justify-end gap-3"><app-button variant="outline" [disabled]="saving" (click)="serviceDialog.hide()">Annuler</app-button><app-button type="submit" [loading]="saving">Enregistrer</app-button></div>
+    </app-form>
+  </app-modal>
+
+  <app-confirm-dialog #confirmDelete title="Supprimer l’élément"
+    [message]="deleteTarget ? 'Confirmer la suppression de « ' + deleteTarget.label + ' » ? Cette action est irréversible.' : ''"
+    confirmLabel="Supprimer" [destructive]="true" [loading]="saving" (confirmed)="onDeleteConfirm()" (cancelled)="cancelDelete()"></app-confirm-dialog>
+
+  <app-modal #directoryDetailsDialog [title]="detailClinique ? (detailClinique.nom ?? 'Détails de la clinique') : 'Détails du bloc'"
+    description="Consultez les données organisationnelles issues du backend." size="lg" (closed)="detailClinique = null; detailBloc = null">
+    <ng-container *ngIf="detailClinique as clinique">
+      <div class="ml-detail-tabs" role="tablist" aria-label="Détails de la clinique">
+        <button type="button" [attr.aria-selected]="detailTab === 'general'" (click)="setDetailTab('general')">Informations générales</button>
+        <button type="button" [attr.aria-selected]="detailTab === 'blocs'" (click)="setDetailTab('blocs')">Blocs <span>{{ clinicContextBlocks.length }}</span></button>
+        <button type="button" [attr.aria-selected]="detailTab === 'services'" (click)="setDetailTab('services')">Services médicaux <span>{{ clinicContextServices.length }}</span></button>
+        <button type="button" [attr.aria-selected]="detailTab === 'praticiens'" (click)="setDetailTab('praticiens')">Praticiens affectés <span>{{ clinicAssignments.length }}</span></button>
+      </div>
+      <app-alert *ngIf="contextError" class="mb-4" variant="destructive" title="Chargement partiel">{{ contextError }}</app-alert>
+      <app-skeleton *ngIf="contextLoading && detailTab !== 'general'" pattern="card" [rows]="5"></app-skeleton>
+
+      <section *ngIf="detailTab === 'general'" class="space-y-5">
+        <app-entity-details-history source="directory" entityType="clinique" [entityId]="clinique.id" [details]="cliniqueDetails(clinique)"></app-entity-details-history>
+        <div class="flex justify-end"><app-button (click)="openCliniqueEdit(clinique)"><app-icon name="edit" size="16"></app-icon>Modifier les informations</app-button></div>
+      </section>
+
+      <section *ngIf="detailTab === 'blocs' && !contextLoading" class="space-y-4">
+        <div class="flex justify-end"><app-button (click)="openNewBloc(clinique)"><app-icon name="plus" size="16"></app-icon>Ajouter un bloc</app-button></div>
+        <app-data-table [columns]="blocColumns" [rows]="clinicContextBlocks" [rowActions]="manageActions" emptyLabel="Aucun bloc pour cette clinique" (rowAction)="onBlocAction($event)"></app-data-table>
+      </section>
+
+      <section *ngIf="detailTab === 'services' && !contextLoading" class="space-y-4">
+        <div class="flex justify-end"><app-button (click)="openNewService(clinique)"><app-icon name="plus" size="16"></app-icon>Ajouter un service</app-button></div>
+        <app-data-table [columns]="serviceColumns" [rows]="clinicContextServices" [rowActions]="manageActions" emptyLabel="Aucun service médical pour cette clinique" (rowAction)="onServiceAction($event)"></app-data-table>
+      </section>
+
+      <section *ngIf="detailTab === 'praticiens' && !contextLoading" class="space-y-4">
+        <p class="text-sm text-[var(--ml-text-muted)]">Les affectations sont en lecture seule ici. Elles se gèrent depuis la fiche du praticien.</p>
+        <div *ngIf="clinicAssignments.length; else noClinicPractitioners" class="ml-assignment-list">
+          <article *ngFor="let assignment of clinicAssignments" class="ml-assignment-row">
+            <app-avatar [name]="(assignedPractitioner(assignment)?.prenom ?? '') + ' ' + (assignedPractitioner(assignment)?.nom ?? '')"></app-avatar>
+            <div class="min-w-0 flex-1"><strong>{{ assignedPractitioner(assignment)?.prenom }} {{ assignedPractitioner(assignment)?.nom || ('Praticien #' + assignment.praticienId) }}</strong><span>{{ practitionerSpecialty(assignedPractitioner(assignment)) }}</span></div>
+            <app-status-badge [value]="assignedPractitioner(assignment)?.actif !== false"></app-status-badge>
+            <time>{{ assignment.dateAffectation ? (assignment.dateAffectation | date:'dd/MM/yyyy') : 'Date indisponible' }}</time>
+            <a class="ml-inline-link" routerLink="/admin/practitioners">Gérer le praticien</a>
+          </article>
+        </div>
+        <ng-template #noClinicPractitioners><app-empty-state icon="users" title="Aucun praticien affecté" description="Les affectations actives créées depuis le module Praticiens apparaîtront ici."></app-empty-state></ng-template>
+      </section>
+    </ng-container>
+
+    <app-entity-details-history *ngIf="detailBloc as bloc" source="directory" entityType="bloc" [entityId]="bloc.id" [details]="blocDetails(bloc)"></app-entity-details-history>
+  </app-modal>
+</section>

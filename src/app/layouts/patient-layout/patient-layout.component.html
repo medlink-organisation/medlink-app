@@ -1,6 +1,8 @@
-<div class="min-h-screen bg-background text-foreground">
-  <app-navbar brand="MedLink" [items]="items"></app-navbar>
-  <main class="mx-auto max-w-screen-xl p-5 md:p-8">
-    <router-outlet></router-outlet>
-  </main>
-</div>
+<app-shell
+  [navigation]="items"
+  roleLabel="Patient"
+  sectionLabel="Mon espace santé"
+  profileRoute="/patient/profil"
+  notificationRoute="/patient/notifications">
+  <router-outlet></router-outlet>
+</app-shell>

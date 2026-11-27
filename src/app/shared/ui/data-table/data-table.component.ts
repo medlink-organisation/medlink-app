@@ -1,5 +1,18 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ColumnDef } from '../column-def.model';
+import { IconName } from '../icon/icon.component';
+
+export interface DataTableRowAction {
+  id: string;
+  label: string;
+  icon: IconName;
+  destructive?: boolean;
+}
+
+export interface DataTableRowActionEvent {
+  action: string;
+  row: unknown;
+}
 
 @Component({
   selector: 'app-data-table',
@@ -11,7 +24,10 @@ export class DataTableComponent {
   @Input() rows: unknown[] = [];
   @Input() loading = false;
   @Input() emptyLabel = 'Aucun résultat';
+  @Input() rowActions: DataTableRowAction[] = [];
+  @Input() inlineRowActions = false;
   @Output() rowClick = new EventEmitter<unknown>();
+  @Output() rowAction = new EventEmitter<DataTableRowActionEvent>();
 
   getCellValue(row: unknown, key: string): unknown {
     if (typeof row !== 'object' || row === null || !(key in row)) {
@@ -27,5 +43,14 @@ export class DataTableComponent {
 
   selectRow(row: unknown): void {
     this.rowClick.emit(row);
+  }
+
+  performAction(action: DataTableRowAction, row: unknown, event: Event): void {
+    event.stopPropagation();
+    const details = (event.currentTarget as HTMLElement | null)?.closest('details');
+    if (details instanceof HTMLDetailsElement) {
+      details.open = false;
+    }
+    this.rowAction.emit({ action: action.id, row });
   }
 }

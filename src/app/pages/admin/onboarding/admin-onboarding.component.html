@@ -1,0 +1,132 @@
+<app-page-container [spacious]="true">
+  <div class="ml-onboarding">
+    <app-page-header
+      title="Configurer votre organisation"
+      subtitle="Un parcours guidé pour préparer l’environnement clinique avant sa mise en service.">
+    </app-page-header>
+
+    <app-stepper [steps]="steps" [currentIndex]="currentStep"></app-stepper>
+
+    <app-error-state
+      *ngIf="errorMessage && loading"
+      title="Configuration indisponible"
+      [description]="errorMessage"
+      actionLabel="Réessayer"
+      (action)="loadData()">
+    </app-error-state>
+
+    <div *ngIf="loading" class="ml-onboarding__skeleton" aria-label="Chargement de la configuration">
+      <app-skeleton pattern="header"></app-skeleton>
+      <app-skeleton pattern="card"></app-skeleton>
+    </div>
+
+    <app-card *ngIf="!loading" variant="section" [padded]="false">
+      <section class="ml-onboarding__panel" [attr.aria-labelledby]="'setup-step-' + currentStep">
+        <div class="ml-onboarding__heading">
+          <div>
+            <p class="ml-eyebrow">Étape {{ currentStep + 1 }} sur {{ steps.length }}</p>
+            <h2 [id]="'setup-step-' + currentStep" class="ml-section-title">{{ steps[currentStep].label }}</h2>
+          </div>
+          <span *ngIf="currentStep === 1" class="ml-progress-count">{{ selectedSpecialtyIds.size }} / {{ requirements.minimumSpecialties }} minimum</span>
+        </div>
+
+        <ng-container [ngSwitch]="currentStep">
+          <div *ngSwitchCase="0" class="ml-onboarding__content">
+            <div class="ml-onboarding__intro">
+              <p>Sélectionnez l’établissement principal à configurer. Vous pourrez gérer les autres cliniques ensuite.</p>
+              <app-button variant="outline" (click)="openClinicForm()"><app-icon name="plus" size="16"></app-icon>Créer une clinique</app-button>
+            </div>
+            <div class="ml-selection-grid" *ngIf="clinics.length; else noClinics">
+              <app-selection-card
+                *ngFor="let clinic of clinics"
+                icon="building"
+                [title]="clinic.nom || 'Clinique sans nom'"
+                [description]="clinic.ville || clinic.adresse || 'Adresse non renseignée'"
+                [meta]="clinic.email || clinic.telephone || ''"
+                [selected]="clinic.id === selectedClinicId"
+                (selectionChange)="selectClinic(clinic)">
+              </app-selection-card>
+            </div>
+            <ng-template #noClinics><app-empty-state icon="building" title="Aucune clinique" description="Créez la première clinique pour commencer la configuration."></app-empty-state></ng-template>
+          </div>
+
+          <div *ngSwitchCase="1" class="ml-onboarding__content">
+            <div class="ml-onboarding__intro">
+              <p>Choisissez les spécialités disponibles dans votre organisation. Leur association détaillée aux établissements nécessitera un contrat backend dédié.</p>
+              <app-button variant="outline" (click)="openSpecialtyForm()"><app-icon name="plus" size="16"></app-icon>Créer une spécialité</app-button>
+            </div>
+            <div class="ml-selection-grid">
+              <app-selection-card
+                *ngFor="let specialty of specialties"
+                icon="tag"
+                [title]="specialty.nom"
+                [description]="specialty.description || 'Spécialité médicale'"
+                [meta]="specialty.code"
+                [multiple]="true"
+                [selected]="specialty.id != null && selectedSpecialtyIds.has(specialty.id)"
+                (selectionChange)="toggleSpecialty(specialty, $event)">
+              </app-selection-card>
+            </div>
+          </div>
+
+          <div *ngSwitchCase="2" class="ml-onboarding__content">
+            <div class="ml-onboarding__intro">
+              <p>Structurez les blocs médicaux rattachés à <strong>{{ selectedClinic?.nom }}</strong>.</p>
+              <app-button variant="outline" (click)="openBlockForm()"><app-icon name="plus" size="16"></app-icon>Créer un bloc</app-button>
+            </div>
+            <div class="ml-selection-grid" *ngIf="clinicBlocks.length; else noBlocks">
+              <app-selection-card
+                *ngFor="let block of clinicBlocks"
+                icon="building"
+                [title]="block.nom || 'Bloc sans nom'"
+                [description]="block.description || 'Département médical'"
+                [meta]="block.code || ''"
+                [multiple]="true"
+                [selected]="block.id != null && selectedBlockIds.has(block.id)"
+                (selectionChange)="toggleBlock(block, $event)">
+              </app-selection-card>
+            </div>
+            <ng-template #noBlocks><app-empty-state icon="building" title="Aucun bloc médical" description="Créez un bloc rattaché à la clinique sélectionnée."></app-empty-state></ng-template>
+          </div>
+
+          <div *ngSwitchCase="3" class="ml-onboarding__content">
+            <p class="ml-onboarding__review-intro">Vérifiez les relations avant activation. Toutes les données affichées proviennent des ressources qui seront persistées côté serveur.</p>
+            <div class="ml-summary-grid">
+              <article class="ml-summary-item"><app-icon name="building" size="19"></app-icon><div><span>Clinique</span><strong>{{ selectedClinic?.nom }}</strong></div></article>
+              <article class="ml-summary-item"><app-icon name="tag" size="19"></app-icon><div><span>Spécialités</span><strong>{{ selectedSpecialtyIds.size }} configurées</strong></div></article>
+              <article class="ml-summary-item"><app-icon name="building" size="19"></app-icon><div><span>Blocs</span><strong>{{ selectedBlockIds.size }} rattachés</strong></div></article>
+            </div>
+            <app-alert *ngIf="errorMessage" variant="destructive" title="Activation impossible">{{ errorMessage }}</app-alert>
+          </div>
+        </ng-container>
+
+        <app-alert *ngIf="validationMessage" variant="destructive" title="Étape incomplète">{{ validationMessage }}</app-alert>
+      </section>
+
+      <footer class="ml-onboarding__footer">
+        <app-button variant="ghost" [disabled]="currentStep === 0 || saving" (click)="previous()">Retour</app-button>
+        <app-button *ngIf="currentStep < steps.length - 1" variant="primary" [disabled]="saving" (click)="next()">Continuer<app-icon name="chevron-right" size="16"></app-icon></app-button>
+        <app-button *ngIf="currentStep === steps.length - 1" variant="primary" [loading]="saving" (click)="activate()"><app-icon *ngIf="!saving" name="shield" size="16"></app-icon>Valider et activer</app-button>
+      </footer>
+    </app-card>
+  </div>
+</app-page-container>
+
+<app-modal #clinicModal title="Créer une clinique" description="Renseignez les informations supportées par le service annuaire.">
+  <app-clinique-form [loading]="saving" (formSubmit)="createClinic($event)" (cancelled)="clinicModal.hide()"></app-clinique-form>
+</app-modal>
+
+<app-modal #specialtyModal title="Créer une spécialité" description="La spécialité sera disponible dans toute l’organisation.">
+  <app-specialty-form [loading]="saving" (formSubmit)="createSpecialty($event)" (cancelled)="specialtyModal.hide()"></app-specialty-form>
+</app-modal>
+
+<app-modal #blockModal title="Créer un bloc médical" [description]="'Rattachement à ' + (selectedClinic?.nom || 'la clinique')">
+  <app-bloc-form
+    [initialValues]="{ cliniqueId: selectedClinicId }"
+    [cliniques]="selectedClinic ? [selectedClinic] : []"
+    [loading]="saving"
+    (formSubmit)="createBlock($event)"
+    (cancelled)="blockModal.hide()">
+  </app-bloc-form>
+</app-modal>
+

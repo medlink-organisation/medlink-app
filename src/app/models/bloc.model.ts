@@ -5,3 +5,12 @@ export interface Bloc {
   description: string | null;
   cliniqueId: number | null;
 }
+
+export interface CreateBlocRequest {
+  code: string;
+  nom: string;
+  description?: string;
+  cliniqueId: number;
+}
+
+export type UpdateBlocRequest = CreateBlocRequest;

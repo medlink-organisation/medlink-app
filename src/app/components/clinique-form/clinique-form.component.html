@@ -1,0 +1,23 @@
+<app-form [formGroup]="formGroup" (submitted)="submit()">
+  <div class="grid gap-4 md:grid-cols-2">
+    <app-form-field label="Nom de la clinique" [required]="true" [error]="errorFor('nom')">
+      <input appFormControl formControlName="nom" maxlength="150" autocomplete="organization" />
+    </app-form-field>
+    <app-form-field label="Ville" [error]="errorFor('ville')">
+      <input appFormControl formControlName="ville" maxlength="120" autocomplete="address-level2" />
+    </app-form-field>
+    <app-form-field label="Adresse" class="md:col-span-2" [error]="errorFor('adresse')">
+      <input appFormControl formControlName="adresse" maxlength="255" autocomplete="street-address" />
+    </app-form-field>
+    <app-form-field label="Téléphone" [error]="errorFor('telephone')">
+      <input appFormControl formControlName="telephone" maxlength="30" autocomplete="tel" />
+    </app-form-field>
+    <app-form-field label="E-mail" [error]="errorFor('email')">
+      <input appFormControl type="email" formControlName="email" maxlength="180" autocomplete="email" />
+    </app-form-field>
+  </div>
+  <div class="mt-6 flex justify-end gap-3">
+    <app-button variant="outline" [disabled]="loading" (click)="cancelled.emit()">Annuler</app-button>
+    <app-button type="submit" [loading]="loading" [disabled]="loading">Enregistrer</app-button>
+  </div>
+</app-form>

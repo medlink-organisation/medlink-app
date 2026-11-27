@@ -10,14 +10,20 @@
     <div class="min-w-0 flex-1">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
     </div>
-    <button
-      type="button"
-      class="hidden size-10 place-items-center rounded-[var(--ml-radius-sm)] text-[var(--ml-text-muted)] sm:grid"
-      aria-label="Notifications indisponibles"
-      title="Les notifications seront disponibles prochainement"
-      disabled>
+    <a
+      *ngIf="notificationRoute"
+      [routerLink]="notificationRoute"
+      class="relative hidden size-10 place-items-center rounded-[var(--ml-radius-sm)] text-[var(--ml-text-muted)] transition-colors hover:bg-[var(--ml-surface-hover)] hover:text-[var(--ml-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ml-focus-ring)] sm:grid"
+      [attr.aria-label]="(unreadCount$ | async) ? 'Notifications non lues : ' + (unreadCount$ | async) : 'Notifications'"
+      title="Consulter les notifications">
       <app-icon name="bell" size="19"></app-icon>
-    </button>
+      <span
+        *ngIf="(unreadCount$ | async) as unreadCount"
+        class="notification-count"
+        aria-hidden="true">
+        {{ unreadCount > 99 ? '99+' : unreadCount }}
+      </span>
+    </a>
     <app-user-menu [roleLabel]="roleLabel" [profileRoute]="profileRoute"></app-user-menu>
   </div>
 </header>

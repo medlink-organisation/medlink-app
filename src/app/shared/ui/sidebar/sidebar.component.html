@@ -1,9 +1,7 @@
 <aside class="flex h-full flex-col bg-[var(--ml-surface)] text-[var(--ml-text-primary)]">
   <div class="flex h-[var(--ml-topbar-height)] shrink-0 items-center border-b border-[var(--ml-border)] px-4" [class.justify-center]="collapsed && !mobile">
     <div class="flex min-w-0 items-center gap-3">
-      <span class="grid size-10 shrink-0 place-items-center rounded-[var(--ml-radius-md)] bg-[var(--ml-primary)] text-white shadow-[var(--ml-shadow-xs)]">
-        <app-icon name="stethoscope" size="21"></app-icon>
-      </span>
+      <span class="ml-brand-mark ml-brand-mark--sm" aria-hidden="true"><span class="ml-brand-mark__letter">M</span><span class="ml-brand-mark__plus">+</span></span>
       <div *ngIf="!collapsed || mobile" class="min-w-0">
         <p class="mb-0 text-base font-bold tracking-tight">MedLink</p>
         <p class="mt-0.5 mb-0 truncate text-xs text-[var(--ml-text-muted)]">{{ roleLabel || heading }}</p>

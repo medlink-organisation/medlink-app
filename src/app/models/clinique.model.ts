@@ -11,3 +11,13 @@ export interface Clinique {
   blocs: Bloc[];
   services: ServiceMedicale[];
 }
+
+export interface CreateCliniqueRequest {
+  nom: string;
+  adresse?: string;
+  telephone?: string;
+  email?: string;
+  ville?: string;
+}
+
+export type UpdateCliniqueRequest = CreateCliniqueRequest;

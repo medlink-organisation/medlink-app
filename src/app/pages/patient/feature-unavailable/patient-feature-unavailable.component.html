@@ -1,0 +1,14 @@
+<ng-container *ngIf="pageData$ | async as page">
+  <section class="space-y-6">
+    <app-page-header [title]="page.title" [subtitle]="page.subtitle"></app-page-header>
+
+    <app-error-state
+      [title]="page.unavailableTitle"
+      [description]="page.unavailableDescription">
+    </app-error-state>
+
+    <app-alert title="Protection de vos données">
+      Aucun identifiant patient ni donnée médicale n’est transmis depuis le navigateur tant que le backend ne fournit pas un endpoint sécurisé lié à l’utilisateur authentifié.
+    </app-alert>
+  </section>
+</ng-container>

@@ -35,6 +35,7 @@ const INITIAL_STATE: AuthState = {
 export class AuthService {
   private readonly stateSignal = signal<AuthState>(INITIAL_STATE);
   private refreshTimer?: ReturnType<typeof setTimeout>;
+  private refreshPromise?: Promise<string | null>;
 
   readonly state = this.stateSignal.asReadonly();
   readonly patientId$: Observable<number | null> = toObservable(this.state).pipe(
@@ -61,7 +62,7 @@ export class AuthService {
     }
   }
 
-  async login(returnUrl = '/auth/login'): Promise<void> {
+  async login(returnUrl = '/patient/dashboard'): Promise<void> {
     this.stateSignal.update((state) => ({ ...state, loading: true, error: null }));
     try {
       await keycloak.login({ redirectUri: this.getSafeRedirectUri(returnUrl) });
@@ -72,6 +73,20 @@ export class AuthService {
         error: 'La redirection vers Keycloak a échoué.'
       }));
       throw new Error('La redirection vers Keycloak a échoué.');
+    }
+  }
+
+  async registerPatient(returnUrl = '/patient/dashboard'): Promise<void> {
+    this.stateSignal.update((state) => ({ ...state, loading: true, error: null }));
+    try {
+      await keycloak.register({ redirectUri: this.getSafeRedirectUri(returnUrl) });
+    } catch {
+      this.stateSignal.update((state) => ({
+        ...state,
+        loading: false,
+        error: 'La redirection vers l’inscription Patient a échoué.'
+      }));
+      throw new Error('La redirection vers l’inscription Patient a échoué.');
     }
   }
 
@@ -88,6 +103,29 @@ export class AuthService {
       }));
       throw new Error('La déconnexion Keycloak a échoué.');
     }
+  }
+
+  async manageAccount(): Promise<void> {
+    if (!this.isAuthenticated()) {
+      await this.login('/patient/profil');
+      return;
+    }
+
+    window.location.assign(keycloak.createAccountUrl({
+      redirectUri: this.getSafeRedirectUri('/patient/profil')
+    }));
+  }
+
+  async changePassword(): Promise<void> {
+    if (!this.isAuthenticated()) {
+      await this.login('/patient/profil');
+      return;
+    }
+
+    await keycloak.login({
+      action: 'UPDATE_PASSWORD',
+      redirectUri: this.getSafeRedirectUri('/patient/profil')
+    });
   }
 
   isAuthenticated(): boolean {
@@ -144,6 +182,20 @@ export class AuthService {
   }
 
   async refreshToken(force: boolean): Promise<string | null> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    const refreshPromise = this.performTokenRefresh(force).finally(() => {
+      if (this.refreshPromise === refreshPromise) {
+        this.refreshPromise = undefined;
+      }
+    });
+    this.refreshPromise = refreshPromise;
+    return refreshPromise;
+  }
+
+  private async performTokenRefresh(force: boolean): Promise<string | null> {
     if (!keycloak.authenticated) {
       return null;
     }
@@ -275,7 +327,7 @@ export class AuthService {
   private getSafeRedirectUri(returnUrl: string): string {
     const path = returnUrl.startsWith('/') && !returnUrl.startsWith('//')
       ? returnUrl
-      : '/dashboard';
+      : '/patient/dashboard';
     return new URL(path, window.location.origin).toString();
   }
 }

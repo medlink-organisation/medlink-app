@@ -6,6 +6,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: false
 })
 export class PaginationComponent {
+  private static nextId = 0;
+
+  readonly pageSizeControlId = `ml-page-size-${PaginationComponent.nextId++}`;
+
   @Input() currentPage = 0;
   @Input() pageSize = 10;
   @Input() totalElements = 0;

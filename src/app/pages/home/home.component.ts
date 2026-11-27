@@ -1,6 +1,4 @@
-import { Component, inject } from '@angular/core';
-
-import { AuthService } from '../../core/auth/auth.service';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-home',
@@ -8,13 +6,4 @@ import { AuthService } from '../../core/auth/auth.service';
   templateUrl: './home.component.html'
 })
 export class HomeComponent {
-  readonly auth = inject(AuthService);
-
-  login(): void {
-    void this.auth.login('/dashboard').catch(() => undefined);
-  }
-
-  logout(): void {
-    void this.auth.logout().catch(() => undefined);
-  }
 }

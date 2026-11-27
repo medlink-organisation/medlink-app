@@ -1,0 +1,56 @@
+<section class="space-y-6">
+  <app-page-header
+    title="Mon profil"
+    subtitle="Consultez votre identité de connexion et gérez la sécurité de votre compte.">
+  </app-page-header>
+
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,0.55fr)]">
+    <app-section-card
+      title="Identité du compte"
+      description="Informations fournies par votre session Keycloak"
+      icon="user">
+      <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
+        <app-avatar [name]="displayName" size="lg"></app-avatar>
+        <dl class="grid min-w-0 flex-1 gap-4 sm:grid-cols-2">
+          <div>
+            <dt class="ml-caption">Nom affiché</dt>
+            <dd class="mt-1 mb-0 font-semibold">{{ displayName }}</dd>
+          </div>
+          <div>
+            <dt class="ml-caption">Adresse e-mail</dt>
+            <dd class="mt-1 mb-0 break-words font-semibold">{{ authService.getEmail() || 'Non renseignée' }}</dd>
+          </div>
+          <div>
+            <dt class="ml-caption">Identifiant</dt>
+            <dd class="mt-1 mb-0 break-words font-semibold">{{ authService.getUsername() || 'Non renseigné' }}</dd>
+          </div>
+          <div>
+            <dt class="ml-caption">Vérification e-mail</dt>
+            <dd class="mt-1 mb-0">
+              <app-status-badge [value]="authService.getProfile()?.emailVerified ?? false" trueLabel="Vérifiée" falseLabel="Non vérifiée"></app-status-badge>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </app-section-card>
+
+    <app-section-card
+      title="Sécurité du compte"
+      description="Mot de passe, e-mail et paramètres Keycloak"
+      icon="shield">
+      <p class="mt-0 text-sm text-[var(--ml-text-secondary)]">
+        La modification du mot de passe s’effectue directement dans l’espace sécurisé Keycloak.
+      </p>
+      <app-button
+        variant="outline"
+        [loading]="openingAccount"
+        (click)="changePassword()">
+        Changer mon mot de passe
+      </app-button>
+    </app-section-card>
+  </div>
+
+  <app-alert title="Informations personnelles complémentaires">
+    La modification du téléphone, des coordonnées et des préférences sera activée lorsqu’un endpoint Patient en libre-service appliquant les validations backend sera disponible.
+  </app-alert>
+</section>

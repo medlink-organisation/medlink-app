@@ -27,3 +27,8 @@ export interface UpdatePraticienRequest {
   numeroOrdre?: string;
   specialiteId?: number;
 }
+
+export interface PractitionerFormSubmission {
+  practitioner: CreatePraticienRequest | UpdatePraticienRequest;
+  cliniqueIds: number[];
+}

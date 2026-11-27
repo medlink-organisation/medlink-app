@@ -1,9 +1,12 @@
-import { Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
-import { catchError, EMPTY, Subject, takeUntil } from 'rxjs';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { catchError, EMPTY, finalize, Subject, takeUntil } from 'rxjs';
 
 import { CreateSpecialiteRequest, PageResponse, Specialite, UpdateSpecialiteRequest } from '../../../models';
 import { ColumnDef } from '../../../shared/ui/column-def.model';
 import { ConfirmDialogComponent } from '../../../shared/ui/confirm-dialog/confirm-dialog.component';
+import { ModalComponent } from '../../../shared/ui/modal/modal.component';
+import { DataTableRowAction, DataTableRowActionEvent } from '../../../shared/ui/data-table/data-table.component';
+import { EntityDetailItem } from '../../../components/entity-details-history/entity-details-history.component';
 import { SpecialiteService } from '../../../services/specialite.service';
 
 @Component({
@@ -13,15 +16,18 @@ import { SpecialiteService } from '../../../services/specialite.service';
 })
 export class SpecialtyListComponent implements OnInit, OnDestroy {
   private readonly specialiteService = inject(SpecialiteService);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
   @ViewChild('confirmDelete') private confirmDeleteDialog?: ConfirmDialogComponent;
+  @ViewChild('specialtyDialog') private specialtyDialog?: ModalComponent;
+  @ViewChild('specialtyDetailsDialog') private specialtyDetailsDialog?: ModalComponent;
 
   specialites: PageResponse<Specialite> | null = null;
   loading = false;
   error: string | null = null;
   currentPage = 0;
   pageSize = 10;
-  showForm = false;
   editTarget: Specialite | null = null;
+  detailTarget: Specialite | null = null;
   deleteTarget: number | null = null;
   destroy$ = new Subject<void>();
   searchTerm = '';
@@ -31,6 +37,12 @@ export class SpecialtyListComponent implements OnInit, OnDestroy {
     { key: 'nom', label: 'Nom' },
     { key: 'description', label: 'Description' },
     { key: 'actif', label: 'Statut', formatter: (value) => value ? 'Actif' : 'Inactif' }
+  ];
+
+  readonly rowActions: DataTableRowAction[] = [
+    { id: 'details', label: 'Plus de détails', icon: 'eye' },
+    { id: 'edit', label: 'Modifier', icon: 'edit' },
+    { id: 'delete', label: 'Supprimer', icon: 'trash', destructive: true }
   ];
 
   ngOnInit(): void {
@@ -43,13 +55,16 @@ export class SpecialtyListComponent implements OnInit, OnDestroy {
     this.specialiteService.getAll({ page: this.currentPage, size: this.pageSize, sort: 'id' }).pipe(
       catchError(() => {
         this.error = 'Erreur lors du chargement des spécialités';
-        this.loading = false;
         return EMPTY;
+      }),
+      finalize(() => {
+        this.loading = false;
+        this.changeDetectorRef.markForCheck();
       }),
       takeUntil(this.destroy$)
     ).subscribe((page) => {
       this.specialites = page;
-      this.loading = false;
+      this.changeDetectorRef.markForCheck();
     });
   }
 
@@ -76,22 +91,49 @@ export class SpecialtyListComponent implements OnInit, OnDestroy {
 
   onRowClick(row: unknown): void {
     if (this.isSpecialite(row)) {
-      this.onEdit(row);
+      this.openDetails(row);
     }
+  }
+
+  onTableAction(event: DataTableRowActionEvent): void {
+    if (!this.isSpecialite(event.row)) {
+      return;
+    }
+    if (event.action === 'details') {
+      this.openDetails(event.row);
+    } else if (event.action === 'edit') {
+      this.onEdit(event.row);
+    } else if (event.action === 'delete' && event.row.id !== null) {
+      this.onDeleteRequest(event.row.id);
+    }
+  }
+
+  openDetails(specialite: Specialite): void {
+    this.detailTarget = specialite;
+    this.specialtyDetailsDialog?.show();
+  }
+
+  detailsFor(specialite: Specialite): EntityDetailItem[] {
+    return [
+      { label: 'Code', value: specialite.code },
+      { label: 'Nom', value: specialite.nom },
+      { label: 'Description', value: specialite.description },
+      { label: 'Statut', value: specialite.actif ? 'Active' : 'Inactive' }
+    ];
   }
 
   onEdit(specialite: Specialite): void {
     this.editTarget = specialite;
-    this.showForm = true;
+    this.specialtyDialog?.show();
   }
 
   onNew(): void {
     this.editTarget = null;
-    this.showForm = true;
+    this.specialtyDialog?.show();
   }
 
   onFormCancel(): void {
-    this.showForm = false;
+    this.specialtyDialog?.hide();
     this.editTarget = null;
   }
 
@@ -104,12 +146,13 @@ export class SpecialtyListComponent implements OnInit, OnDestroy {
       catchError(() => {
         this.error = 'Erreur lors de l’enregistrement';
         this.loading = false;
+        this.changeDetectorRef.markForCheck();
         return EMPTY;
       }),
       takeUntil(this.destroy$)
     ).subscribe(() => {
       this.loading = false;
-      this.showForm = false;
+      this.specialtyDialog?.hide();
       this.editTarget = null;
       this.loadSpecialites();
     });
@@ -127,6 +170,7 @@ export class SpecialtyListComponent implements OnInit, OnDestroy {
     this.specialiteService.delete(this.deleteTarget).pipe(
       catchError(() => {
         this.error = 'Erreur lors de la suppression';
+        this.changeDetectorRef.markForCheck();
         return EMPTY;
       }),
       takeUntil(this.destroy$)
@@ -144,6 +188,7 @@ export class SpecialtyListComponent implements OnInit, OnDestroy {
     this.specialiteService.changeStatus(event.id, event.actif).pipe(
       catchError(() => {
         this.error = 'Erreur lors du changement de statut';
+        this.changeDetectorRef.markForCheck();
         return EMPTY;
       }),
       takeUntil(this.destroy$)

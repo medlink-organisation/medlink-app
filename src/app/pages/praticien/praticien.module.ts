@@ -10,12 +10,16 @@ import { MesCreneauxComponent } from './mes-creneaux/mes-creneaux.component';
 import { MesRendezVousPraticienComponent } from './mes-rendez-vous/mes-rendez-vous.component';
 import { PraticienDashboardComponent } from './praticien-dashboard/praticien-dashboard.component';
 import { PraticienRoutingModule } from './praticien-routing.module';
+import { ResultatExamenUploadComponent } from './resultat-examen-upload/resultat-examen-upload.component';
+import { MesPatientsComponent } from './mes-patients/mes-patients.component';
 
 @NgModule({
   declarations: [
     PraticienDashboardComponent,
     MesCreneauxComponent,
-    MesRendezVousPraticienComponent
+    MesRendezVousPraticienComponent,
+    ResultatExamenUploadComponent,
+    MesPatientsComponent
   ],
   imports: [CommonModule, ReactiveFormsModule, RouterModule, UiModule, ComponentsModule, LayoutsModule, PraticienRoutingModule]
 })

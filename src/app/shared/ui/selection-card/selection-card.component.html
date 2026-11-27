@@ -1,0 +1,18 @@
+<button
+  type="button"
+  class="ml-selection-card"
+  [class.ml-selection-card--selected]="selected"
+  [disabled]="disabled"
+  [attr.aria-pressed]="selected"
+  (click)="toggle()">
+  <span class="ml-selection-card__icon" aria-hidden="true"><app-icon [name]="icon" size="20"></app-icon></span>
+  <span class="ml-selection-card__body">
+    <span class="ml-selection-card__title">{{ title }}</span>
+    <span *ngIf="description" class="ml-selection-card__description">{{ description }}</span>
+    <span *ngIf="meta" class="ml-selection-card__meta">{{ meta }}</span>
+    <span class="ml-selection-card__content"><ng-content></ng-content></span>
+  </span>
+  <span class="ml-selection-card__check" aria-hidden="true">
+    <app-icon *ngIf="selected" name="check" size="15"></app-icon>
+  </span>
+</button>

@@ -8,12 +8,22 @@ import { AuthService } from './core/auth/auth.service';
 import { authInterceptor } from './core/auth/auth-interceptor';
 import { AccessDeniedComponent } from './pages/access-denied/access-denied.component';
 import { LoginComponent } from './pages/auth/login/login.component';
+import { PublicLayoutComponent } from './layouts/public-layout/public-layout.component';
+import { ClinicsComponent } from './pages/clinics/clinics.component';
+import { ContactComponent } from './pages/contact/contact.component';
+import { HelpComponent } from './pages/help/help.component';
+import { HomeComponent } from './pages/home/home.component';
 
 @NgModule({
   declarations: [
     App,
     LoginComponent,
-    AccessDeniedComponent
+    AccessDeniedComponent,
+    PublicLayoutComponent,
+    HomeComponent,
+    ClinicsComponent,
+    HelpComponent,
+    ContactComponent
   ],
   imports: [
     BrowserModule,

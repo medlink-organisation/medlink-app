@@ -29,6 +29,10 @@ export class SpecialiteService {
     return this.api.get('/praticien-service/specialites/getall', toHttpParams(query as Record<string, unknown>));
   }
 
+  getActiveForBooking(query: PageableQuery): Observable<PageResponse<Specialite>> {
+    return this.api.get('/praticien-service/specialites/booking/active', toHttpParams(query as Record<string, unknown>));
+  }
+
   changeStatus(id: number, actif: boolean): Observable<Specialite> {
     return this.api.patch(`/praticien-service/specialites/change-status/${id}`, null, toHttpParams({ actif }));
   }

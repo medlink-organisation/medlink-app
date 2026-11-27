@@ -1,0 +1,43 @@
+<div class="space-y-6">
+  <dl class="audit-summary">
+    <div *ngFor="let detail of details">
+      <dt>{{ detail.label }}</dt>
+      <dd>{{ formatValue(detail.value) }}</dd>
+    </div>
+  </dl>
+
+  <section aria-labelledby="entity-history-title">
+    <div class="mb-4 flex items-center gap-2">
+      <app-icon name="history" size="19"></app-icon>
+      <h3 id="entity-history-title" class="m-0 text-base font-semibold">Historique</h3>
+    </div>
+
+    <app-skeleton *ngIf="loading" pattern="card" [rows]="4"></app-skeleton>
+    <app-alert *ngIf="error" variant="destructive" title="Historique indisponible">{{ error }}</app-alert>
+    <app-empty-state
+      *ngIf="!loading && !error && revisions.length === 0"
+      icon="history"
+      title="Aucune révision enregistrée"
+      description="Les créations et modifications auditées apparaîtront ici.">
+    </app-empty-state>
+
+    <ol *ngIf="!loading && revisions.length" class="entity-history-list">
+      <li *ngFor="let revision of revisions; trackBy: trackRevision">
+        <span class="entity-history-list__marker" aria-hidden="true"></span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <strong>{{ operationLabel(revision.operation) }}</strong>
+            <time [attr.datetime]="revision.timestamp">{{ formatDate(revision.timestamp) }}</time>
+          </div>
+          <p>{{ revision.username || revision.userId || 'Système' }} · Révision #{{ revision.revisionId }}</p>
+          <ul *ngIf="revision.changes.length" class="entity-history-changes">
+            <li *ngFor="let change of revision.changes">
+              <span>{{ change.fieldName }}</span>
+              <span>{{ formatValue(change.oldValue) }} → {{ formatValue(change.newValue) }}</span>
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+</div>

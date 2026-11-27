@@ -2,7 +2,17 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiClientService } from '../core/http/api-client.service';
-import { Creneau, CreateCreneauRequest, PageResponse, PageableQuery, UpdateCreneauRequest } from '../models';
+import {
+  Creneau,
+  CreneauDayDetails,
+  CreneauMonth,
+  CreateCreneauRequest,
+  PageResponse,
+  PageableQuery,
+  GenerationCreneauxRequest,
+  GenerationCreneauxResponse,
+  UpdateCreneauRequest
+} from '../models';
 import { toHttpParams } from './http-params';
 
 @Injectable({ providedIn: 'root' })
@@ -31,5 +41,29 @@ export class CreneauService {
 
   delete(id: number): Observable<void> {
     return this.api.delete(`/scheduling-service/creneaux/delete/${id}`);
+  }
+
+  generate(request: GenerationCreneauxRequest): Observable<GenerationCreneauxResponse> {
+    return this.api.post('/scheduling-service/creneaux/generate', request);
+  }
+
+  getCalendar(praticienId: number | null, cliniqueId: number | null, debut: string, fin: string): Observable<Creneau[]> {
+    return this.api.get('/scheduling-service/creneaux/calendar', toHttpParams({ praticienId, cliniqueId, debut, fin }));
+  }
+
+  getAvailableForBooking(praticienId: number, cliniqueId: number, debut: string, fin: string): Observable<Creneau[]> {
+    return this.api.get('/scheduling-service/creneaux/booking/available', toHttpParams({ praticienId, cliniqueId, debut, fin }));
+  }
+
+  getMonth(praticienId: number, month: string): Observable<CreneauMonth> {
+    return this.api.get('/scheduling-service/creneaux/calendar/month', toHttpParams({ praticienId, month }));
+  }
+
+  getDay(praticienId: number, date: string): Observable<CreneauDayDetails> {
+    return this.api.get('/scheduling-service/creneaux/calendar/day', toHttpParams({ praticienId, date }));
+  }
+
+  getMyCalendar(debut: string, fin: string): Observable<Creneau[]> {
+    return this.api.get('/scheduling-service/creneaux/me/calendar', toHttpParams({ debut, fin }));
   }
 }

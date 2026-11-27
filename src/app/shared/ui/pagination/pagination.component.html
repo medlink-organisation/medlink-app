@@ -1,16 +1,18 @@
 <div class="flex flex-wrap items-center justify-between gap-4 text-sm">
   <p class="text-muted-foreground">{{ rangeStart }}–{{ rangeEnd }} sur {{ totalElements }}</p>
   <div class="flex items-center gap-2">
-    <label class="text-muted-foreground" for="page-size">Lignes par page</label>
+    <label class="text-muted-foreground" [for]="pageSizeControlId">Lignes par page</label>
     <hlm-select [value]="pageSizeValue" (valueChange)="onSizeChange($event ?? '')">
-      <hlm-select-trigger id="page-size" aria-label="Lignes par page">
+      <hlm-select-trigger [id]="pageSizeControlId" aria-label="Lignes par page">
         <hlm-select-value [placeholder]="pageSizeValue"></hlm-select-value>
       </hlm-select-trigger>
-      <hlm-select-content>
-        <hlm-select-item *ngFor="let option of pageSizeOptions" [value]="'' + option">
-          {{ option }}
-        </hlm-select-item>
-      </hlm-select-content>
+      <ng-template hlmSelectPortal>
+        <hlm-select-content>
+          <hlm-select-item *ngFor="let option of pageSizeOptions" [value]="'' + option">
+            {{ option }}
+          </hlm-select-item>
+        </hlm-select-content>
+      </ng-template>
     </hlm-select>
     <button type="button" class="rounded-md border border-border px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!hasPrev" (click)="prev()">Précédent</button>
     <button type="button" class="rounded-md border border-border px-3 py-2 disabled:cursor-not-allowed disabled:opacity-50" [disabled]="!hasNext" (click)="next()">Suivant</button>

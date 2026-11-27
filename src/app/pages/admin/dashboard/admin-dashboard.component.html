@@ -1,9 +1,39 @@
-<section class="space-y-6">
-  <app-page-header title="Tableau de bord" subtitle="Vue d'ensemble de la plateforme"></app-page-header>
-  <app-skeleton *ngIf="loading" [rows]="2"></app-skeleton>
-  <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
-  <div *ngIf="!loading" class="grid gap-4 sm:grid-cols-2">
-    <app-stat-card label="Praticiens" [value]="praticienCount" icon="users"></app-stat-card>
-    <app-stat-card label="Spécialités" [value]="specialiteCount" icon="tag"></app-stat-card>
-  </div>
+<section class="admin-home">
+  <app-page-header title="Tableau de bord" subtitle="Supervision de l’activité et accès aux opérations administratives."></app-page-header>
+
+  <app-alert *ngIf="error" variant="destructive" title="Chargement partiel">{{ error }}</app-alert>
+  <app-skeleton *ngIf="loading" pattern="card" [rows]="4"></app-skeleton>
+
+  <ng-container *ngIf="!loading">
+    <section class="admin-home__metrics" aria-label="Indicateurs administratifs">
+      <article><span>Praticiens</span><strong>{{ praticienCount }}</strong><a routerLink="/admin/practitioners">Voir la liste</a></article>
+      <article><span>Patients</span><strong>{{ patientCount }}</strong><a routerLink="/admin/patients">Voir la liste</a></article>
+      <article><span>Cliniques</span><strong>{{ cliniqueCount }}</strong><a routerLink="/admin/cliniques">Configurer</a></article>
+      <article><span>Rendez-vous</span><strong>{{ rendezVousCount }}</strong><a routerLink="/admin/rendez-vous">Consulter</a></article>
+    </section>
+
+    <div class="admin-home__layout">
+      <section class="admin-home__panel" aria-labelledby="admin-recent-title">
+        <header><div><h2 id="admin-recent-title">Derniers rendez-vous enregistrés</h2><p>État des derniers éléments retournés par le planning.</p></div><a routerLink="/admin/rendez-vous">Tout afficher</a></header>
+        <div *ngIf="recentRendezVous.length; else noRecentAppointments" class="admin-home__activity-list">
+          <article *ngFor="let rendezVous of recentRendezVous">
+            <span class="admin-home__activity-icon"><app-icon name="calendar" size="17"></app-icon></span>
+            <div><strong>{{ rendezVous.type || 'Rendez-vous' }}</strong><small>Créneau #{{ rendezVous.creneauId || '—' }}</small></div>
+            <app-status-badge [value]="rendezVous.status || 'EN_ATTENTE'"></app-status-badge>
+          </article>
+        </div>
+        <ng-template #noRecentAppointments><app-empty-state icon="calendar-x" title="Aucun rendez-vous" description="Les rendez-vous récemment créés apparaîtront ici."></app-empty-state></ng-template>
+      </section>
+
+      <section class="admin-home__panel" aria-labelledby="admin-actions-title">
+        <header><div><h2 id="admin-actions-title">Actions rapides</h2><p>Accès direct aux tâches administratives courantes.</p></div></header>
+        <nav class="admin-home__actions" aria-label="Actions administratives">
+          <a routerLink="/admin/practitioners"><app-icon name="users" size="18"></app-icon><span><strong>Gérer les praticiens</strong><small>Fiches et affectations</small></span><app-icon name="chevron-right" size="16"></app-icon></a>
+          <a routerLink="/admin/creneaux"><app-icon name="clock" size="18"></app-icon><span><strong>Configurer les créneaux</strong><small>Planning des disponibilités</small></span><app-icon name="chevron-right" size="16"></app-icon></a>
+          <a routerLink="/admin/cliniques"><app-icon name="building" size="18"></app-icon><span><strong>Configuration</strong><small>Cliniques, blocs et services</small></span><app-icon name="chevron-right" size="16"></app-icon></a>
+          <a routerLink="/admin/audit"><app-icon name="activity" size="18"></app-icon><span><strong>Consulter l’historique</strong><small>Activité administrative</small></span><app-icon name="chevron-right" size="16"></app-icon></a>
+        </nav>
+      </section>
+    </div>
+  </ng-container>
 </section>
