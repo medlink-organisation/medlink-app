@@ -1,6 +1,6 @@
 export type AuditOperation = 'ADD' | 'MOD' | 'DEL';
 export type AuditActorType = 'USER' | 'SERVICE' | 'SYSTEM' | 'UNKNOWN';
-export type AuditSource = 'directory' | 'praticien';
+export type AuditSource = 'directory' | 'praticien' | 'scheduling' | 'medical-record' | 'notification';
 
 export interface AuditFieldChange {
   fieldName: string;

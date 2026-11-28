@@ -1,7 +1,7 @@
 <section class="space-y-6">
   <app-page-header
-    title="Historique des créations"
-    subtitle="Consultez les créations enregistrées par les services MedLink.">
+    title="Historique d’activité"
+    subtitle="Consultez les créations, modifications et suppressions enregistrées par les services MedLink.">
   </app-page-header>
 
   <app-alert *ngIf="error" variant="destructive" title="Accès à l’historique">{{ error }}</app-alert>
@@ -10,12 +10,24 @@
     <div class="admin-tabs" role="tablist" aria-label="Service audité">
       <button type="button" role="tab" [attr.aria-selected]="source === 'directory'" (click)="setSource('directory')">Cliniques et blocs</button>
       <button type="button" role="tab" [attr.aria-selected]="source === 'praticien'" (click)="setSource('praticien')">Praticiens et spécialités</button>
+      <button type="button" role="tab" [attr.aria-selected]="source === 'scheduling'" (click)="setSource('scheduling')">Rendez-vous</button>
+      <button type="button" role="tab" [attr.aria-selected]="source === 'medical-record'" (click)="setSource('medical-record')">Dossiers médicaux</button>
+      <button type="button" role="tab" [attr.aria-selected]="source === 'notification'" (click)="setSource('notification')">Notifications</button>
     </div>
 
     <app-form-field label="Type d’élément">
       <select appFormControl [value]="entityType" (change)="setEntityType($any($event.target).value)">
-        <option value="">Toutes les créations</option>
+        <option value="">Tous les éléments</option>
         <option *ngFor="let entity of entities" [value]="entity">{{ entity }}</option>
+      </select>
+    </app-form-field>
+
+    <app-form-field label="Opération">
+      <select appFormControl [value]="operation" (change)="setOperation($any($event.target).value)">
+        <option value="">Toutes les opérations</option>
+        <option value="ADD">Créations</option>
+        <option value="MOD">Modifications</option>
+        <option value="DEL">Suppressions</option>
       </select>
     </app-form-field>
   </div>
@@ -24,7 +36,7 @@
     [columns]="columns"
     [rows]="revisions?.content ?? []"
     [loading]="loading"
-    emptyLabel="Aucune création enregistrée"
+    emptyLabel="Aucune activité enregistrée"
     (rowClick)="openDetails($event)">
   </app-data-table>
 
@@ -38,7 +50,7 @@
 
   <app-modal
     #historyDialog
-    title="Détail de la création"
+    title="Détail de l’activité"
     description="Informations enregistrées dans le journal d’audit."
     size="lg"
     (closed)="selectedRevision = null">
@@ -50,20 +62,22 @@
         <div><dt>Service</dt><dd>{{ revision.serviceName }}</dd></div>
         <div><dt>Révision</dt><dd>#{{ revision.revisionId }}</dd></div>
         <div><dt>Acteur</dt><dd>{{ revision.actorType }}</dd></div>
+        <div><dt>Opération</dt><dd>{{ operationLabel(revision.operation) }}</dd></div>
       </dl>
 
       <div class="mt-6 overflow-x-auto rounded-[var(--ml-radius-md)] border border-[var(--ml-border)]">
         <table class="audit-changes-table">
           <thead>
-            <tr><th>Champ</th><th>Valeur créée</th></tr>
+            <tr><th>Champ</th><th>Ancienne valeur</th><th>Nouvelle valeur</th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let change of revision.changes">
               <td>{{ change.fieldName }}</td>
+              <td>{{ formatValue(change.oldValue) }}</td>
               <td>{{ formatValue(change.newValue) }}</td>
             </tr>
             <tr *ngIf="revision.changes.length === 0">
-              <td colspan="2">Aucun détail de champ disponible.</td>
+              <td colspan="3">Aucun détail de champ disponible.</td>
             </tr>
           </tbody>
         </table>

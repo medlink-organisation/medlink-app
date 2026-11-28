@@ -1,0 +1,27 @@
+<aside class="next-appointment" [class.is-expanded]="expanded" aria-live="polite">
+  <button type="button" class="next-appointment__toggle" [attr.aria-expanded]="expanded"
+    aria-label="Afficher le prochain rendez-vous" (click)="toggle()">
+    <app-icon name="clock" size="18"></app-icon>
+    <span *ngIf="appointment">{{ countdown }}</span>
+    <span *ngIf="!appointment && !loading">Aucun rendez-vous à venir</span>
+    <span *ngIf="loading">Chargement…</span>
+    <app-icon class="next-appointment__chevron" name="chevron-down" size="16"></app-icon>
+  </button>
+
+  <div *ngIf="expanded" class="next-appointment__panel">
+    <ng-container *ngIf="appointment as item; else noAppointment">
+      <span class="next-appointment__eyebrow">Prochain rendez-vous</span>
+      <strong>{{ participantName }}</strong>
+      <time>{{ item.dateDebut | date:'EEEE dd/MM à HH:mm' }}</time>
+      <div class="next-appointment__meta">
+        <span>{{ item.dateDebut | date:'HH:mm' }}–{{ item.dateFin | date:'HH:mm' }}</span>
+        <span>{{ durationMinutes }} min</span>
+        <span>{{ item.type }}</span>
+      </div>
+      <b>{{ countdown }}</b>
+    </ng-container>
+    <ng-template #noAppointment>
+      <p>{{ loading ? 'Recherche du prochain rendez-vous…' : 'Aucun rendez-vous planifié dans les 30 prochains jours.' }}</p>
+    </ng-template>
+  </div>
+</aside>

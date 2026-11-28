@@ -45,6 +45,7 @@ export class PrendreRendezVousComponent implements OnInit {
   selectedSpecialite: BookingSpecialite | null = null;
   selectedClinique: BookingClinique | null = null;
   selectedPraticien: BookingPraticien | null = null;
+  selectedDate: string | null = null;
   selectedSlotId: number | null = null;
   loading = true;
   submitting = false;
@@ -72,14 +73,18 @@ export class PrendreRendezVousComponent implements OnInit {
     this.selectedSpecialite = specialite;
     this.selectedClinique = null;
     this.selectedPraticien = null;
+    this.selectedDate = null;
     this.selectedSlotId = null;
+    this.slots = [];
   }
 
   selectClinique(clinique: BookingClinique): void {
     if (!clinique.id || !this.selectedSpecialite?.id) return;
     this.selectedClinique = clinique;
     this.selectedPraticien = null;
+    this.selectedDate = null;
     this.selectedSlotId = null;
+    this.slots = [];
     this.loading = true;
     this.error = '';
     forkJoin({
@@ -100,7 +105,9 @@ export class PrendreRendezVousComponent implements OnInit {
   selectPraticien(praticien: BookingPraticien): void {
     if (!praticien.id || !this.selectedClinique?.id) return;
     this.selectedPraticien = praticien;
+    this.selectedDate = null;
     this.selectedSlotId = null;
+    this.slots = [];
     this.loading = true;
     this.error = '';
     const from = new Date();
@@ -115,15 +122,48 @@ export class PrendreRendezVousComponent implements OnInit {
       this.loading = false;
       this.cdr.markForCheck();
     })).subscribe({
-      next: (slots: Creneau[]) => this.slots = slots
-        .filter(slot => slot.id !== null && slot.dateDebut !== null && slot.dateFin !== null)
-        .map(slot => ({ id: slot.id!, dateDebut: slot.dateDebut!, dateFin: slot.dateFin!, statut: 'DISPONIBLE' })),
+      next: (slots: Creneau[]) => {
+        this.slots = slots
+          .filter(slot => slot.id !== null
+            && slot.dateDebut !== null
+            && slot.dateFin !== null
+            && slot.statut === 'DISPONIBLE')
+          .map(slot => ({
+            id: slot.id!,
+            dateDebut: slot.dateDebut!,
+            dateFin: slot.dateFin!,
+            statut: 'DISPONIBLE'
+          }));
+        this.selectedDate = this.availableDates()[0] ?? null;
+      },
       error: (error: unknown) => this.error = this.businessError(error)
     });
   }
 
   selectSlot(slotId: number): void {
     this.selectedSlotId = slotId;
+  }
+
+  selectDate(date: string): void {
+    if (this.selectedDate === date) return;
+    this.selectedDate = date;
+    this.selectedSlotId = null;
+  }
+
+  availableDates(): string[] {
+    return [...new Set(this.slots.map(slot => slot.dateDebut.slice(0, 10)))];
+  }
+
+  slotsForSelectedDate(): TimeSlot[] {
+    return this.selectedDate
+      ? this.slots.filter(slot => slot.dateDebut.slice(0, 10) === this.selectedDate)
+      : [];
+  }
+
+  formatDay(date: string): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'short', day: '2-digit', month: 'short'
+    }).format(new Date(`${date}T12:00:00`));
   }
 
   next(): void {

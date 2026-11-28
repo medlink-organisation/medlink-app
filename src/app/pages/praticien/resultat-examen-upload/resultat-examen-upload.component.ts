@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { CreateResultatExamenRequest, RendezVousAgenda } from '../../../models';
 import { RendezVousService } from '../../../services/rendez-vous.service';
@@ -15,6 +16,8 @@ export class ResultatExamenUploadComponent implements OnInit {
   private readonly rendezVousService = inject(RendezVousService);
   private readonly resultatService = inject(ResultatExamenService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @ViewChild('uploadDialog') private uploadDialog?: ModalComponent;
 
@@ -101,10 +104,19 @@ export class ResultatExamenUploadComponent implements OnInit {
           .filter((appointment) => appointment.status === 'TERMINE')
           .sort((left, right) => right.dateDebut.localeCompare(left.dateDebut));
         this.loading = false;
+        const requestedId = this.route.snapshot.queryParamMap.get('rendezVousId');
+        const requestedAppointment = this.consultations.find(
+          appointment => appointment.id === requestedId
+        );
+        if (requestedAppointment) {
+          queueMicrotask(() => this.openUpload(requestedAppointment));
+        }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.error = 'Impossible de charger les consultations terminées.';
+        this.cdr.markForCheck();
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { forkJoin } from 'rxjs';
 
 import { DossierMedical, PageResponse, ResultatExamen } from '../../../models';
@@ -13,6 +13,7 @@ import { ResultatExamenService } from '../../../services/resultat-examen.service
 export class MesResultatsComponent implements OnInit {
   private readonly resultatService = inject(ResultatExamenService);
   private readonly medicalRecordService = inject(MedicalRecordService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   resultats: PageResponse<ResultatExamen> = {
     content: [], totalElements: 0, totalPages: 0, size: 10, number: 0, first: true, last: true
@@ -88,10 +89,12 @@ export class MesResultatsComponent implements OnInit {
         this.dossier = dossier;
         this.resultats = resultats;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.error = 'Impossible de charger vos résultats d’examens.';
+        this.cdr.markForCheck();
       }
     });
   }

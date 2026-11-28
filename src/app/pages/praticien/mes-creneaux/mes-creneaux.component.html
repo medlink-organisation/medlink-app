@@ -6,7 +6,6 @@
     <header class="creneaux-page__section-header creneaux-toolbar">
       <div><h2 id="my-week-title">Semaine du {{ weekStart | date:'dd MMMM yyyy' }}</h2><p>{{ creneaux.length }} créneau(x) planifié(s). Consultation en lecture seule.</p></div>
       <div class="creneaux-toolbar__controls">
-        <label><span>Statut</span><select [value]="statusFilter" (change)="statusFilter = $any($event.target).value"><option value="">Tous</option><option value="DISPONIBLE">Disponible</option><option value="RESERVE">Réservé</option><option value="BLOQUE">Bloqué</option><option value="INDISPONIBLE">Indisponible</option></select></label>
         <div class="creneaux-toolbar__navigation"><app-button size="sm" variant="outline" (click)="changeWeek(-1)">Précédente</app-button><app-button size="sm" variant="ghost" (click)="goToCurrentWeek()">Aujourd’hui</app-button><app-button size="sm" variant="outline" (click)="changeWeek(1)">Suivante</app-button></div>
       </div>
     </header>
@@ -14,18 +13,40 @@
     <app-skeleton *ngIf="loading" [rows]="5"></app-skeleton>
     <div *ngIf="!loading" class="creneaux-calendar-scroll" tabindex="0" aria-label="Votre calendrier hebdomadaire, défilement horizontal disponible">
       <div class="creneaux-calendar">
-        <article *ngFor="let day of weekDays" class="creneaux-calendar__day">
-          <header><h3>{{ day | date:'EEEE' }}</h3><time>{{ day | date:'dd/MM' }}</time></header>
-          <div class="creneaux-calendar__slots">
-            <div *ngFor="let slot of filteredSlotsForDay(day)" class="creneaux-time-slot creneaux-time-slot--readonly" [attr.data-status]="slot.statut">
-              <strong>{{ slot.dateDebut | date:'HH:mm' }}–{{ slot.dateFin | date:'HH:mm' }}</strong>
-              <small>Clinique #{{ slot.cliniqueId }}</small>
-              <app-status-badge *ngIf="slot.statut" [value]="slot.statut"></app-status-badge>
-            </div>
-            <p *ngIf="filteredSlotsForDay(day).length === 0" class="creneaux-calendar__empty">Repos</p>
+        <article *ngFor="let day of weekDays" class="creneaux-calendar__day creneaux-calendar__day--selectable"
+          [class.is-selected]="isSelectedDay(day)" role="button" tabindex="0"
+          (click)="selectDay(day)" (keydown.enter)="selectDay(day)" (keydown.space)="$event.preventDefault(); selectDay(day)">
+          <header>
+            <div><h3>{{ day | date:'EEEE' }}</h3><time>{{ day | date:'dd/MM' }}</time></div>
+          </header>
+          <div class="creneaux-calendar__work-hours">
+            <strong>{{ workingHoursForDay(day) || 'Repos' }}</strong>
           </div>
         </article>
       </div>
     </div>
   </section>
+
 </section>
+
+<app-modal #dayAppointmentsDialog
+  [title]="selectedDay ? 'Rendez-vous du ' + (selectedDay | date:'EEEE dd MMMM yyyy') : 'Rendez-vous du jour'"
+  [description]="selectedDay ? appointmentsForDay(selectedDay).length + ' rendez-vous planifié(s)' : ''"
+  size="lg">
+  <div *ngIf="selectedDay as day" aria-live="polite">
+    <div *ngIf="appointmentsForDay(day).length; else noDayAppointments" class="creneaux-day-agenda__list">
+      <article *ngFor="let appointment of appointmentsForDay(day)">
+        <time>{{ appointment.dateDebut | date:'HH:mm' }}–{{ appointment.dateFin | date:'HH:mm' }}</time>
+        <div>
+          <strong>{{ patientName(appointment) }}</strong>
+          <small>{{ appointment.type }}</small>
+        </div>
+        <app-status-badge [value]="appointment.status"></app-status-badge>
+      </article>
+    </div>
+    <ng-template #noDayAppointments>
+      <app-empty-state icon="calendar-x" title="Aucun rendez-vous"
+        description="Aucun patient n’est planifié pour cette journée."></app-empty-state>
+    </ng-template>
+  </div>
+</app-modal>

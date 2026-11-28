@@ -38,7 +38,7 @@ export class AuthService {
   private refreshPromise?: Promise<string | null>;
 
   readonly state = this.stateSignal.asReadonly();
-  readonly patientId$: Observable<number | null> = toObservable(this.state).pipe(
+  readonly patientId$: Observable<string | null> = toObservable(this.state).pipe(
     map(() => this.getPatientId()),
   );
 
@@ -128,7 +128,7 @@ export class AuthService {
       firstName: token['given_name'],
       lastName: token['family_name'],
       roles: token.realm_access?.roles ?? [],
-      patientId: token['patient_id'] ?? null,
+      patientId: token['patient_id'] == null ? null : String(token['patient_id']),
       praticienId: token['praticien_id'] ?? null,
       adminId: token['admin_id']??null,
     };
@@ -183,11 +183,13 @@ export class AuthService {
     return this.stateSignal().profile;
   }
 
-  getPatientId(): number | null {
+  getPatientId(): string | null {
     const patientId = keycloak.tokenParsed?.['patient_id'];
-    return typeof patientId === 'number' && Number.isSafeInteger(patientId) && patientId > 0
-      ? patientId
-      : null;
+    if (typeof patientId !== 'string' && typeof patientId !== 'number') {
+      return null;
+    }
+    const value = String(patientId);
+    return /^[1-9]\d*$/.test(value) ? value : null;
   }
 
   async refreshToken(force: boolean): Promise<string | null> {

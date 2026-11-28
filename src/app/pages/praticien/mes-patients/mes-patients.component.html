@@ -35,7 +35,7 @@
         <div class="flex items-center justify-between gap-2">
 
           <p class="font-semibold text-slate-900">
-            Patient #{{ patient.patientId }}
+            {{ patient.patientPrenom || 'Patient' }} {{ patient.patientNom }}
           </p>
 
           <span
@@ -64,7 +64,7 @@
         </p>
 
         <p class="mt-1 text-xs text-slate-400">
-          Clinique #{{ patient.cliniqueId }}
+          Clinique associée
         </p>
 
       </button>
@@ -126,11 +126,17 @@
             </p>
 
             <h2 class="mt-1 text-xl font-semibold text-slate-900">
-              Patient #{{ selected?.patientId }}
+              {{ dossier.patientPrenom || 'Patient' }} {{ dossier.patientNom }}
             </h2>
 
+            <p class="mt-1 text-sm text-slate-600">
+              <span *ngIf="dossier.patientEmail">{{ dossier.patientEmail }}</span>
+              <span *ngIf="dossier.patientTelephone"> · {{ dossier.patientTelephone }}</span>
+              <span *ngIf="dossier.patientDateNaissance"> · {{ dossier.patientDateNaissance | date:'dd/MM/yyyy' }}</span>
+            </p>
+
             <p class="mt-1 text-sm text-slate-500">
-              Dossier #{{ dossier.id }}
+              Dossier médical
               · mis à jour le
               {{ dossier.derniereModification | date:'dd/MM/yyyy à HH:mm' }}
             </p>
@@ -150,6 +156,7 @@
 
             <a
               routerLink="/praticien/resultats"
+              [queryParams]="{ rendezVousId: selected?.lastRendezVousId }"
               class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
 
               Ajouter un résultat
@@ -158,6 +165,23 @@
 
           </div>
 
+        </div>
+
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Consultations autorisées</h3>
+          <p *ngIf="dossier.comptesRendus.length === 0" class="mt-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+            Aucun compte rendu autorisé pour ce rendez-vous.
+          </p>
+          <div *ngIf="dossier.comptesRendus.length" class="relative mt-3 space-y-3 border-l-2 border-blue-100 pl-5">
+            <div *ngFor="let compteRendu of dossier.comptesRendus" class="rounded-xl border border-slate-200 p-4">
+              <span class="absolute -left-[7px] mt-1 h-3 w-3 rounded-full bg-blue-600"></span>
+              <p class="text-sm font-medium text-blue-700">{{ compteRendu.dateConsultation || compteRendu.dateRedaction | date:'dd/MM/yyyy à HH:mm' }}</p>
+              <p class="mt-1 font-semibold text-slate-900">{{ compteRendu.diagnostic }}</p>
+              <p class="mt-2 text-sm text-slate-600">{{ compteRendu.observations }}</p>
+              <p *ngIf="compteRendu.contenu" class="mt-2 text-sm text-slate-600">{{ compteRendu.contenu }}</p>
+              <p class="mt-2 text-xs text-slate-500">Dr {{ compteRendu.praticienPrenom }} {{ compteRendu.praticienNom }}</p>
+            </div>
+          </div>
         </div>
 
         <!-- Résultats des examens -->
@@ -198,10 +222,20 @@
               <p
                 *ngIf="resultat.conclusion"
                 class="mt-2 text-sm text-slate-600">
-
-                {{ resultat.conclusion }}
+                <span class="font-medium">Commentaire :</span> {{ resultat.conclusion }}
 
               </p>
+
+              <div class="mt-3">
+                <app-button
+                  size="sm"
+                  variant="outline"
+                  [loading]="downloadingResultId === resultat.id"
+                  [disabled]="downloadingResultId !== null"
+                  (click)="downloadResult(resultat)">
+                  Télécharger le PDF
+                </app-button>
+              </div>
 
             </div>
 

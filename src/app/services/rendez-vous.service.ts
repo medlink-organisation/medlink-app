@@ -25,8 +25,8 @@ export class RendezVousService {
     return this.api.get('/scheduling-service/rendez-vous/getall', toHttpParams(query as Record<string, unknown>));
   }
 
-  getByPatientId(patientId: number, query: PageableQuery): Observable<PageResponse<RendezVous>> {
-    return this.api.get(`/scheduling-service/rendez-vous/get-by-patientid/${patientId}`, toHttpParams(query as Record<string, unknown>));
+  getByPatientId(patientId: string, query: PageableQuery): Observable<PageResponse<RendezVous>> {
+    return this.api.get(`/scheduling-service/rendez-vous/get-by-patientid/${encodeURIComponent(patientId)}`, toHttpParams(query as Record<string, unknown>));
   }
 
   getMine(query: PageableQuery): Observable<PageResponse<PatientRendezVous>> {

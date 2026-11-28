@@ -17,7 +17,7 @@
           <li *ngFor="let rendezVous of todayAppointments">
             <time>{{ rendezVous.dateDebut | date:'HH:mm' }}</time>
             <span class="praticien-home__timeline-marker"></span>
-            <div><strong>{{ rendezVous.type }}</strong><small>Patient #{{ rendezVous.patientId }} · Clinique #{{ rendezVous.cliniqueId }}</small></div>
+            <div><strong>{{ rendezVous.type }}</strong><small>{{ rendezVous.patientPrenom }} {{ rendezVous.patientNom }}</small></div>
             <app-status-badge [value]="rendezVous.status"></app-status-badge>
           </li>
         </ol>
@@ -28,7 +28,7 @@
         <section aria-labelledby="upcoming-title">
           <header><div><h2 id="upcoming-title">À venir</h2><p>Prochains rendez-vous</p></div></header>
           <ul *ngIf="upcomingAppointments.length; else noUpcoming" class="praticien-home__upcoming">
-            <li *ngFor="let rendezVous of upcomingAppointments"><time><strong>{{ rendezVous.dateDebut | date:'dd' }}</strong><span>{{ rendezVous.dateDebut | date:'MMM' }}</span></time><div><strong>{{ rendezVous.dateDebut | date:'HH:mm' }} · {{ rendezVous.type }}</strong><small>Clinique #{{ rendezVous.cliniqueId }}</small></div></li>
+            <li *ngFor="let rendezVous of upcomingAppointments"><time><strong>{{ rendezVous.dateDebut | date:'dd' }}</strong><span>{{ rendezVous.dateDebut | date:'MMM' }}</span></time><div><strong>{{ rendezVous.dateDebut | date:'HH:mm' }} · {{ rendezVous.type }}</strong><small>{{ rendezVous.patientPrenom }} {{ rendezVous.patientNom }}</small></div></li>
           </ul>
           <ng-template #noUpcoming><p class="praticien-home__empty">Aucun rendez-vous à venir sur les sept prochains jours.</p></ng-template>
         </section>

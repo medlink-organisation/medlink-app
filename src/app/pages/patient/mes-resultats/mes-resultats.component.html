@@ -9,10 +9,22 @@
   <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
 
   <app-card *ngIf="!loading && dossier">
+    <div class="mb-5 border-b border-slate-100 pb-5">
+      <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">Patient</p>
+      <h2 class="mt-1 text-lg font-semibold text-slate-900">
+        {{ dossier.patientPrenom || '' }} {{ dossier.patientNom || '' }}
+      </h2>
+      <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600">
+        <span *ngIf="dossier.patientEmail">{{ dossier.patientEmail }}</span>
+        <span *ngIf="dossier.patientTelephone">{{ dossier.patientTelephone }}</span>
+        <span *ngIf="dossier.patientDateNaissance">Né(e) le {{ dossier.patientDateNaissance | date:'dd/MM/yyyy' }}</span>
+        <span *ngIf="dossier.patientSexe">{{ dossier.patientSexe }}</span>
+      </div>
+    </div>
     <div class="grid gap-4 sm:grid-cols-3">
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dossier</p>
-        <p class="mt-1 font-semibold text-slate-900">#{{ dossier.id }}</p>
+        <p class="mt-1 font-semibold text-slate-900">Dossier médical</p>
       </div>
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Créé le</p>
@@ -24,6 +36,30 @@
       </div>
     </div>
   </app-card>
+
+  <section *ngIf="!loading && dossier" class="space-y-3">
+    <h2 class="text-lg font-semibold text-slate-900">Historique des consultations</h2>
+    <app-empty-state *ngIf="dossier.comptesRendus.length === 0" title="Aucune consultation"
+      description="Les comptes rendus communicables apparaîtront ici."></app-empty-state>
+    <div class="relative space-y-4 border-l-2 border-blue-100 pl-5">
+      <app-card *ngFor="let compteRendu of dossier.comptesRendus">
+        <span class="absolute -left-[7px] mt-1 h-3 w-3 rounded-full bg-blue-600"></span>
+        <p class="text-sm font-medium text-blue-700">{{ compteRendu.dateConsultation || compteRendu.dateRedaction | date:'dd/MM/yyyy à HH:mm' }}</p>
+        <h3 class="mt-1 font-semibold text-slate-900">Dr {{ compteRendu.praticienPrenom }} {{ compteRendu.praticienNom }}</h3>
+        <dl class="mt-3 grid gap-3 text-sm md:grid-cols-2">
+          <div><dt class="font-medium text-slate-500">Motif</dt><dd class="text-slate-800">{{ compteRendu.motif }}</dd></div>
+          <div><dt class="font-medium text-slate-500">Diagnostic</dt><dd class="text-slate-800">{{ compteRendu.diagnostic }}</dd></div>
+          <div><dt class="font-medium text-slate-500">Observations</dt><dd class="text-slate-800">{{ compteRendu.observations }}</dd></div>
+          <div><dt class="font-medium text-slate-500">Traitement</dt><dd class="text-slate-800">{{ compteRendu.traitementRecommande }}</dd></div>
+          <div><dt class="font-medium text-slate-500">Recommandations</dt><dd class="text-slate-800">{{ compteRendu.recommandations }}</dd></div>
+          <div><dt class="font-medium text-slate-500">Examens complémentaires</dt><dd class="text-slate-800">{{ compteRendu.examensComplementaires }}</dd></div>
+        </dl>
+        <p *ngIf="compteRendu.contenu" class="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+          {{ compteRendu.contenu }}
+        </p>
+      </app-card>
+    </div>
+  </section>
   <app-empty-state *ngIf="!loading && resultats.content.length === 0"
     title="Aucun résultat disponible"
     description="Les résultats ajoutés par votre praticien apparaîtront ici."></app-empty-state>
@@ -55,4 +91,14 @@
     [pageSize]="resultats.size"
     [totalElements]="resultats.totalElements"
     (pageChange)="onPageChange($event)"></app-pagination>
+
+  <app-card *ngIf="!loading && dossier && dossier.documentsMedicaux.length">
+    <h2 class="font-semibold text-slate-900">Documents médicaux</h2>
+    <div class="mt-3 divide-y divide-slate-100">
+      <div *ngFor="let document of dossier.documentsMedicaux" class="flex justify-between gap-4 py-3 text-sm">
+        <span class="font-medium text-slate-800">{{ document.nomFichier }}</span>
+        <span class="text-slate-500">{{ document.dateDepot | date:'dd/MM/yyyy' }}</span>
+      </div>
+    </div>
+  </app-card>
 </section>

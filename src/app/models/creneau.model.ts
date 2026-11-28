@@ -65,7 +65,7 @@ export interface CreneauAppointmentSummary {
   id: string;
   heureDebut: string;
   heureFin: string;
-  patientId: number;
+  patientId: string;
   cliniqueId: number;
   statut: string;
 }

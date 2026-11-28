@@ -8,8 +8,9 @@ import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { AppShellComponent } from './app-shell/app-shell.component';
 import { PatientLayoutComponent } from './patient-layout/patient-layout.component';
 import { PraticienLayoutComponent } from './praticien-layout/praticien-layout.component';
+import { NextAppointmentWidgetComponent } from './next-appointment-widget/next-appointment-widget.component';
 
-const LAYOUTS = [AdminLayoutComponent, AppShellComponent, PatientLayoutComponent, PraticienLayoutComponent];
+const LAYOUTS = [AdminLayoutComponent, AppShellComponent, PatientLayoutComponent, PraticienLayoutComponent, NextAppointmentWidgetComponent];
 
 @NgModule({
   declarations: LAYOUTS,

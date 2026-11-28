@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { catchError, EMPTY, finalize, forkJoin, map, Subject, switchMap, takeUntil, tap } from 'rxjs';
@@ -355,8 +356,8 @@ export class CreneauListComponent implements OnInit, OnDestroy {
       return;
     }
     this.creneauService.delete(this.deleteTarget).pipe(
-      catchError(() => {
-        this.error = 'Erreur lors de la suppression du créneau';
+      catchError((error: unknown) => {
+        this.error = this.deleteBusinessError(error);
         this.changeDetector.markForCheck();
         return EMPTY;
       }),
@@ -371,6 +372,16 @@ export class CreneauListComponent implements OnInit, OnDestroy {
 
   onDeleteCancel(): void {
     this.deleteTarget = null;
+  }
+
+  private deleteBusinessError(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const detail = error.error?.detail;
+      if (typeof detail === 'string' && detail.trim()) {
+        return detail;
+      }
+    }
+    return 'Erreur lors de la suppression du créneau';
   }
 
   ngOnDestroy(): void {

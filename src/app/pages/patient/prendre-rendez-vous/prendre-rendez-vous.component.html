@@ -4,7 +4,7 @@
   <app-alert *ngIf="error" variant="destructive" title="Réservation impossible">{{ error }}</app-alert>
 
   <app-section-card *ngIf="confirmationId; else bookingSteps" title="Rendez-vous confirmé">
-    <div class="space-y-3"><p>Votre rendez-vous a bien été réservé.</p><p class="text-sm text-muted-foreground">Référence : {{ confirmationId }}</p></div>
+    <div class="space-y-3"><p>Votre rendez-vous a bien été réservé.</p></div>
   </app-section-card>
 
   <ng-template #bookingSteps>
@@ -24,7 +24,23 @@
     </app-section-card>
 
     <app-section-card *ngIf="currentIndex === 3" title="Choisissez une date et une heure">
-      <app-time-slot-picker [slots]="slots" [selectedSlotId]="selectedSlotId" (slotSelected)="selectSlot($event)"></app-time-slot-picker>
+      <div *ngIf="availableDates().length" class="space-y-5">
+        <div>
+          <p class="mb-3 text-sm font-medium text-slate-700">1. Choisissez un jour</p>
+          <div class="flex flex-wrap gap-2">
+            <app-button *ngFor="let date of availableDates()" type="button"
+              [variant]="selectedDate === date ? 'default' : 'outline'"
+              (click)="selectDate(date)">
+              {{ formatDay(date) }}
+            </app-button>
+          </div>
+        </div>
+        <div *ngIf="selectedDate">
+          <p class="mb-3 text-sm font-medium text-slate-700">2. Choisissez une heure disponible</p>
+          <app-time-slot-picker [slots]="slotsForSelectedDate()" [selectedSlotId]="selectedSlotId"
+            (slotSelected)="selectSlot($event)"></app-time-slot-picker>
+        </div>
+      </div>
       <app-empty-state *ngIf="!loading && slots.length === 0" title="Aucun créneau disponible dans les 60 prochains jours"></app-empty-state>
     </app-section-card>
 

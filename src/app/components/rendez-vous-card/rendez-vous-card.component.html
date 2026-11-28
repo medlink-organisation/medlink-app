@@ -1,19 +1,26 @@
-<app-card>
+<app-card variant="interactive">
+  <div class="cursor-pointer" role="button" tabindex="0"
+    aria-label="Afficher les détails du rendez-vous"
+    (click)="emitSelected()" (keydown.enter)="emitSelected()">
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <h3 class="font-semibold">Rendez-vous {{ rendezVous.id }}</h3>
-      <p class="mt-1 text-sm text-muted-foreground">{{ rendezVous.type }} · Créneau {{ rendezVous.creneauId }}</p>
-      <p class="text-sm text-muted-foreground">Patient {{ rendezVous.patientId }}</p>
+      <h3 class="font-semibold">{{ rendezVous.type || 'Rendez-vous' }}</h3>
+      <p *ngIf="dateDebut" class="mt-1 text-sm font-medium text-slate-700">
+        {{ dateDebut | date:'EEEE dd/MM/yyyy' }} de {{ dateDebut | date:'HH:mm' }} à {{ dateFin | date:'HH:mm' }}
+      </p>
+      <p class="mt-1 text-sm text-muted-foreground">Consultation planifiée</p>
+      <p class="text-sm text-muted-foreground">{{ patientName }}</p>
     </div>
     <app-status-badge [value]="rendezVous.status ?? ''"></app-status-badge>
   </div>
   <div class="mt-4 flex flex-wrap gap-2" *ngIf="rendezVous.status === 'EN_ATTENTE'">
-    <app-button size="sm" (click)="emitAction('confirmer')">Confirmer</app-button>
-    <app-button size="sm" variant="outline" (click)="emitAction('annuler')">Annuler</app-button>
+    <app-button size="sm" (click)="emitAction('confirmer', $event)">Confirmer</app-button>
+    <app-button size="sm" variant="outline" (click)="emitAction('annuler', $event)">Annuler</app-button>
   </div>
   <div class="mt-4 flex flex-wrap gap-2" *ngIf="rendezVous.status === 'CONFIRME'">
-    <app-button size="sm" (click)="emitAction('terminer')">Terminer</app-button>
-    <app-button size="sm" variant="outline" (click)="emitAction('absent')">Absent</app-button>
-    <app-button size="sm" variant="outline" (click)="emitAction('reporter')">Reporter</app-button>
+    <app-button size="sm" (click)="emitAction('terminer', $event)">Terminer</app-button>
+    <app-button size="sm" variant="outline" (click)="emitAction('absent', $event)">Absent</app-button>
+    <app-button size="sm" variant="outline" (click)="emitAction('reporter', $event)">Reporter</app-button>
+  </div>
   </div>
 </app-card>

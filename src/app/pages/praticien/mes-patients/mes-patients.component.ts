@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { DossierMedical, PageResponse, PraticienPatient, ResultatExamen } from '../../../models';
 import { MedicalRecordService } from '../../../services/medical-record.service';
 import { RendezVousService } from '../../../services/rendez-vous.service';
+import { ResultatExamenService } from '../../../services/resultat-examen.service';
 
 @Component({
   selector: 'app-mes-patients',
@@ -13,6 +14,7 @@ import { RendezVousService } from '../../../services/rendez-vous.service';
 export class MesPatientsComponent implements OnInit {
   private readonly rendezVousService = inject(RendezVousService);
   private readonly medicalRecordService = inject(MedicalRecordService);
+  private readonly resultatExamenService = inject(ResultatExamenService);
   private readonly cdr = inject(ChangeDetectorRef);
   patients: PageResponse<PraticienPatient> = {
     content: [],
@@ -29,6 +31,7 @@ export class MesPatientsComponent implements OnInit {
   loading = true;
   loadingRecord = false;
   downloading = false;
+  downloadingResultId: string | null = null;
   error = '';
 
   ngOnInit(): void {
@@ -95,6 +98,25 @@ export class MesPatientsComponent implements OnInit {
       error: () => {
         this.downloading = false;
         this.error = 'Le téléchargement du dossier médical a échoué.';
+      },
+    });
+  }
+
+  downloadResult(resultat: ResultatExamen): void {
+    if (!resultat.id || this.downloadingResultId) {
+      return;
+    }
+    this.downloadingResultId = resultat.id;
+    this.error = '';
+    this.resultatExamenService.download(resultat.id).subscribe({
+      next: (blob) => {
+        const type = resultat.typeExamen?.trim().replace(/[^a-zA-Z0-9-_]+/g, '-') || 'examen';
+        this.save(blob, `resultat-${type}.pdf`);
+        this.downloadingResultId = null;
+      },
+      error: () => {
+        this.downloadingResultId = null;
+        this.error = 'Le téléchargement du résultat a échoué.';
       },
     });
   }

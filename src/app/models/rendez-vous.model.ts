@@ -4,7 +4,7 @@ export type TypeRendezVous = 'CONSULTATION' | 'CONTROLE' | 'URGENCE';
 export interface RendezVous {
   id: string | null;
   creneauId: number | null;
-  patientId: number | null;
+  patientId: string | null;
   status: StatusRendezVous | null;
   type: TypeRendezVous | null;
 }
@@ -27,13 +27,15 @@ export interface AdminRendezVous {
 
 export interface CreateRendezVousRequest {
   creneauId: number;
-  patientId: number;
+  patientId: string;
   type: TypeRendezVous;
 }
 
 export interface RendezVousAgenda {
   id: string;
-  patientId: number;
+  patientId: string;
+  patientNom: string;
+  patientPrenom: string;
   praticienId: number;
   cliniqueId: number;
   creneauId: number;
@@ -47,6 +49,8 @@ export interface PatientRendezVous {
   id: string;
   creneauId: number;
   praticienId: number;
+  praticienNom: string;
+  praticienPrenom: string;
   cliniqueId: number;
   dateDebut: string;
   dateFin: string;
@@ -56,6 +60,8 @@ export interface PatientRendezVous {
 
 export interface PraticienPatient {
   patientId: string;
+  patientNom: string;
+  patientPrenom: string;
   lastRendezVousId: string;
   lastRendezVousAt: string;
   cliniqueId: number;

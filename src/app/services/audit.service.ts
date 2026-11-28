@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiClientService } from '../core/http/api-client.service';
-import { AuditRevision, AuditSource, PageResponse, PageableQuery } from '../models';
+import { AuditOperation, AuditRevision, AuditSource, PageResponse, PageableQuery } from '../models';
 import { toHttpParams } from './http-params';
 
 export interface AuditCreationQuery extends PageableQuery {
   entityType?: string;
+  operation?: AuditOperation;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -14,10 +15,14 @@ export class AuditService {
   private readonly api = inject(ApiClientService);
 
   getCreations(source: AuditSource, query: AuditCreationQuery): Observable<PageResponse<AuditRevision>> {
-    const { entityType, ...pageable } = query;
+    return this.getRevisions(source, { ...query, operation: 'ADD' });
+  }
+
+  getRevisions(source: AuditSource, query: AuditCreationQuery): Observable<PageResponse<AuditRevision>> {
+    const { entityType, operation, ...pageable } = query;
     return this.api.get(
       `/api/admin/audit/${source}`,
-      toHttpParams({ ...pageable, entityType, operation: 'ADD' })
+      toHttpParams({ ...pageable, entityType, operation })
     );
   }
 

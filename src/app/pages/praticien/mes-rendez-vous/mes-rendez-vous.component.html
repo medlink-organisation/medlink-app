@@ -1,10 +1,104 @@
 <section class="space-y-6">
   <app-page-header title="Mes rendez-vous"></app-page-header>
   <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
+  <app-alert *ngIf="success" title="Consultation enregistrée">{{ success }}</app-alert>
   <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
   <app-empty-state *ngIf="!loading && rendezVous.content.length === 0" title="Aucun rendez-vous"
     description="Vos rendez-vous apparaîtront ici."></app-empty-state>
   <div *ngIf="!loading" class="grid gap-4">
-    <app-rendez-vous-card *ngFor="let item of rendezVous.content" [rendezVous]="item"></app-rendez-vous-card>
+    <app-rendez-vous-card *ngFor="let item of rendezVous.content" [rendezVous]="item"
+      (selected)="openDetails(item)" (action)="onAction($event)"></app-rendez-vous-card>
   </div>
+
+  <app-section-card *ngIf="!loading && followUpTasks().length > 0"
+    title="Rendez-vous de contrôle à planifier">
+    <div class="grid gap-3">
+      <div *ngFor="let task of followUpTasks()"
+        class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-4">
+        <div>
+          <p class="font-medium text-slate-900">Après la consultation</p>
+          <p class="text-sm text-slate-500">Choisissez un nouveau créneau disponible pour ce patient.</p>
+        </div>
+        <app-button size="sm" [loading]="followUpLoading && selectedFollowUpTask?.id === task.id"
+          (click)="openFollowUp(task)">Planifier le contrôle</app-button>
+      </div>
+    </div>
+  </app-section-card>
 </section>
+
+<app-modal #detailsDialog title="Détails du rendez-vous"
+  description="Informations de la consultation planifiée." size="lg"
+  (closed)="selectedAppointment = null">
+  <ng-container *ngIf="selectedAppointment as item">
+    <div class="space-y-5">
+      <div class="flex items-center justify-between gap-4">
+        <h3 class="font-semibold">{{ item.type === 'CONTROLE' ? 'Consultation de contrôle' : item.type === 'URGENCE' ? 'Consultation urgente' : 'Consultation' }}</h3>
+        <app-status-badge [value]="item.status"></app-status-badge>
+      </div>
+      <dl class="grid gap-4 text-sm md:grid-cols-2">
+        <div><dt class="text-muted-foreground">Patient</dt><dd class="font-medium">{{ item.patientPrenom }} {{ item.patientNom }}</dd></div>
+        <div><dt class="text-muted-foreground">Date</dt><dd class="font-medium">{{ item.dateDebut | date:'EEEE dd/MM/yyyy' }}</dd></div>
+        <div><dt class="text-muted-foreground">Heure de début</dt><dd class="font-medium">{{ item.dateDebut | date:'HH:mm' }}</dd></div>
+        <div><dt class="text-muted-foreground">Heure de fin</dt><dd class="font-medium">{{ item.dateFin | date:'HH:mm' }}</dd></div>
+        <div><dt class="text-muted-foreground">Type</dt><dd class="font-medium">{{ item.type === 'CONTROLE' ? 'Contrôle' : item.type === 'URGENCE' ? 'Urgence' : 'Consultation' }}</dd></div>
+        <div><dt class="text-muted-foreground">Statut</dt><dd class="font-medium"><app-status-badge [value]="item.status"></app-status-badge></dd></div>
+      </dl>
+      <div class="flex justify-end border-t border-border pt-4">
+        <app-button type="button" variant="ghost" (click)="closeDetails()">Fermer</app-button>
+      </div>
+    </div>
+  </ng-container>
+</app-modal>
+
+<app-modal #reportDialog title="Compte rendu médical"
+  description="Renseignez le compte rendu avant de terminer la consultation."
+  size="lg" [closeDisabled]="saving">
+  <form [formGroup]="reportForm" (ngSubmit)="submitReport()" class="grid gap-4 md:grid-cols-2">
+    <app-alert *ngIf="error" class="md:col-span-2" variant="destructive" title="Enregistrement impossible">{{ error }}</app-alert>
+    <app-form-field label="Motif" [required]="true"><textarea appFormControl formControlName="motifConsultation" rows="3"></textarea></app-form-field>
+    <app-form-field label="Symptômes" [required]="true"><textarea appFormControl formControlName="symptomes" rows="3"></textarea></app-form-field>
+    <app-form-field label="Diagnostic" [required]="true"><textarea appFormControl formControlName="diagnostic" rows="3"></textarea></app-form-field>
+    <app-form-field label="Observations" [required]="true"><textarea appFormControl formControlName="observations" rows="3"></textarea></app-form-field>
+    <app-form-field label="Traitement" [required]="true"><textarea appFormControl formControlName="traitementRecommande" rows="3"></textarea></app-form-field>
+    <app-form-field label="Recommandations" [required]="true"><textarea appFormControl formControlName="recommandations" rows="3"></textarea></app-form-field>
+    <app-form-field class="md:col-span-2" label="Examens complémentaires" [required]="true"><textarea appFormControl formControlName="examensComplementaires" rows="3"></textarea></app-form-field>
+    <app-form-field label="Consultation de contrôle" [required]="true">
+      <select appFormControl formControlName="controleRequis">
+        <option [ngValue]="false">Non</option>
+        <option [ngValue]="true">Oui</option>
+      </select>
+    </app-form-field>
+    <div class="flex items-end justify-end md:col-span-2">
+      <app-button type="submit" [loading]="saving">Enregistrer et terminer</app-button>
+    </div>
+  </form>
+</app-modal>
+
+<app-modal #followUpDialog title="Planifier le rendez-vous de contrôle"
+  description="Sélectionnez un créneau futur disponible dans votre agenda."
+  size="lg" [closeDisabled]="saving">
+  <form [formGroup]="followUpForm" (ngSubmit)="submitFollowUp()" class="grid gap-4">
+    <app-alert *ngIf="error" variant="destructive" title="Planification impossible">{{ error }}</app-alert>
+    <app-form-field label="Créneau de contrôle" [required]="true">
+      <select appFormControl formControlName="creneauId">
+        <option [ngValue]="null">Sélectionnez un créneau</option>
+        <option *ngFor="let slot of followUpSlots" [ngValue]="slot.id">
+          {{ slot.dateDebut | date:'EEEE dd/MM/yyyy à HH:mm' }} · Clinique {{ slot.cliniqueId }}
+        </option>
+      </select>
+    </app-form-field>
+    <app-empty-state *ngIf="!followUpLoading && followUpSlots.length === 0"
+      title="Aucun créneau disponible"
+      description="Ajoutez d’abord un créneau futur à votre agenda."></app-empty-state>
+    <app-form-field label="Motif du contrôle">
+      <textarea appFormControl formControlName="motifControle" rows="3"
+        placeholder="Précisez l’objectif du contrôle si nécessaire"></textarea>
+    </app-form-field>
+    <div class="flex justify-end gap-3">
+      <app-button type="button" variant="ghost" [disabled]="saving"
+        (click)="followUpDialog.hide()">Annuler</app-button>
+      <app-button type="submit" [loading]="saving"
+        [disabled]="followUpSlots.length === 0">Créer le rendez-vous de contrôle</app-button>
+    </div>
+  </form>
+</app-modal>
