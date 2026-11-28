@@ -1,104 +1,182 @@
-<section class="space-y-6">
+<section class="space-y-5">
   <app-page-header title="Mon dossier médical"
-    subtitle="Consultez vos résultats et téléchargez une synthèse PDF de votre dossier.">
+    subtitle="Retrouvez vos informations médicales, consultations, résultats et documents.">
     <app-button actions variant="outline" [loading]="downloadingRecord" (click)="downloadRecord()">
-      Télécharger mon dossier PDF
+      Télécharger le dossier PDF
     </app-button>
   </app-page-header>
+
   <app-alert *ngIf="error" variant="destructive" title="Erreur">{{ error }}</app-alert>
-  <app-skeleton *ngIf="loading" [rows]="4"></app-skeleton>
+  <app-skeleton *ngIf="loading" [rows]="6"></app-skeleton>
 
-  <app-card *ngIf="!loading && dossier">
-    <div class="mb-5 border-b border-slate-100 pb-5">
-      <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">Patient</p>
-      <h2 class="mt-1 text-lg font-semibold text-slate-900">
-        {{ dossier.patientPrenom || '' }} {{ dossier.patientNom || '' }}
-      </h2>
-      <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-slate-600">
-        <span *ngIf="dossier.patientEmail">{{ dossier.patientEmail }}</span>
-        <span *ngIf="dossier.patientTelephone">{{ dossier.patientTelephone }}</span>
-        <span *ngIf="dossier.patientDateNaissance">Né(e) le {{ dossier.patientDateNaissance | date:'dd/MM/yyyy' }}</span>
-        <span *ngIf="dossier.patientSexe">{{ dossier.patientSexe }}</span>
-      </div>
-    </div>
-    <div class="grid gap-4 sm:grid-cols-3">
+  <ng-container *ngIf="!loading && dossier">
+    <header class="ml-medical-header">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dossier</p>
-        <p class="mt-1 font-semibold text-slate-900">Dossier médical</p>
-      </div>
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Créé le</p>
-        <p class="mt-1 text-slate-700">{{ dossier.dateCreation | date:'dd/MM/yyyy' }}</p>
-      </div>
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Dernière mise à jour</p>
-        <p class="mt-1 text-slate-700">{{ dossier.derniereModification | date:'dd/MM/yyyy à HH:mm' }}</p>
-      </div>
-    </div>
-  </app-card>
-
-  <section *ngIf="!loading && dossier" class="space-y-3">
-    <h2 class="text-lg font-semibold text-slate-900">Historique des consultations</h2>
-    <app-empty-state *ngIf="dossier.comptesRendus.length === 0" title="Aucune consultation"
-      description="Les comptes rendus communicables apparaîtront ici."></app-empty-state>
-    <div class="relative space-y-4 border-l-2 border-blue-100 pl-5">
-      <app-card *ngFor="let compteRendu of dossier.comptesRendus">
-        <span class="absolute -left-[7px] mt-1 h-3 w-3 rounded-full bg-blue-600"></span>
-        <p class="text-sm font-medium text-blue-700">{{ compteRendu.dateConsultation || compteRendu.dateRedaction | date:'dd/MM/yyyy à HH:mm' }}</p>
-        <h3 class="mt-1 font-semibold text-slate-900">Dr {{ compteRendu.praticienPrenom }} {{ compteRendu.praticienNom }}</h3>
-        <dl class="mt-3 grid gap-3 text-sm md:grid-cols-2">
-          <div><dt class="font-medium text-slate-500">Motif</dt><dd class="text-slate-800">{{ compteRendu.motif }}</dd></div>
-          <div><dt class="font-medium text-slate-500">Diagnostic</dt><dd class="text-slate-800">{{ compteRendu.diagnostic }}</dd></div>
-          <div><dt class="font-medium text-slate-500">Observations</dt><dd class="text-slate-800">{{ compteRendu.observations }}</dd></div>
-          <div><dt class="font-medium text-slate-500">Traitement</dt><dd class="text-slate-800">{{ compteRendu.traitementRecommande }}</dd></div>
-          <div><dt class="font-medium text-slate-500">Recommandations</dt><dd class="text-slate-800">{{ compteRendu.recommandations }}</dd></div>
-          <div><dt class="font-medium text-slate-500">Examens complémentaires</dt><dd class="text-slate-800">{{ compteRendu.examensComplementaires }}</dd></div>
-        </dl>
-        <p *ngIf="compteRendu.contenu" class="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-          {{ compteRendu.contenu }}
-        </p>
-      </app-card>
-    </div>
-  </section>
-  <app-empty-state *ngIf="!loading && resultats.content.length === 0"
-    title="Aucun résultat disponible"
-    description="Les résultats ajoutés par votre praticien apparaîtront ici."></app-empty-state>
-
-  <div *ngIf="!loading" class="grid gap-4 lg:grid-cols-2">
-    <app-card *ngFor="let resultat of resultats.content">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">Résultat médical</p>
-          <h2 class="mt-1 text-lg font-semibold text-slate-900">{{ resultat.typeExamen }}</h2>
-          <p class="mt-1 text-sm text-slate-500">Examen du {{ resultat.dateExamen | date:'dd/MM/yyyy' }}</p>
-          <p class="text-xs text-slate-400">Publié le {{ resultat.datePublication | date:'dd/MM/yyyy à HH:mm' }}</p>
+        <p class="ml-medical-eyebrow">Dossier médical patient</p>
+        <h2>{{ dossier.patientPrenom || 'Patient' }} {{ dossier.patientNom }}</h2>
+        <div class="ml-medical-header__contact">
+          <span *ngIf="dossier.patientDateNaissance">Né(e) le {{ dossier.patientDateNaissance | date:'dd/MM/yyyy' }}</span>
+          <span *ngIf="dossier.patientSexe">{{ dossier.patientSexe }}</span>
+          <span *ngIf="dossier.patientTelephone">{{ dossier.patientTelephone }}</span>
+          <span *ngIf="dossier.patientEmail">{{ dossier.patientEmail }}</span>
         </div>
-        <app-badge tone="success">Disponible</app-badge>
       </div>
-      <p *ngIf="resultat.conclusion" class="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-        {{ resultat.conclusion }}
-      </p>
-      <div class="mt-5 border-t border-slate-200 pt-4">
-        <app-button [loading]="downloadingId === resultat.id" (click)="download(resultat)">
-          Télécharger le PDF
-        </app-button>
+      <dl class="ml-medical-header__dates">
+        <div><dt>Création</dt><dd>{{ dossier.dateCreation | date:'dd/MM/yyyy' }}</dd></div>
+        <div><dt>Dernière mise à jour</dt><dd>{{ dossier.derniereModification | date:'dd/MM/yyyy à HH:mm' }}</dd></div>
+      </dl>
+    </header>
+
+    <div hlmTabs [tab]="activeTab" (tabActivated)="activeTab = $event" class="ml-medical-tabs">
+      <div class="ml-medical-tabs__scroll">
+        <div hlmTabsList variant="line">
+          <button hlmTabsTrigger="overview">Informations</button>
+          <button hlmTabsTrigger="history">Consultations</button>
+          <button hlmTabsTrigger="reports">Comptes rendus</button>
+          <button hlmTabsTrigger="results">Résultats d’examens</button>
+          <button hlmTabsTrigger="documents">Documents</button>
+        </div>
       </div>
-    </app-card>
-  </div>
 
-  <app-pagination *ngIf="resultats.totalElements > 0"
-    [currentPage]="resultats.number"
-    [pageSize]="resultats.size"
-    [totalElements]="resultats.totalElements"
-    (pageChange)="onPageChange($event)"></app-pagination>
+      <div hlmTabsContent="overview" class="ml-medical-panel">
+        <div class="ml-medical-grid">
+          <app-card>
+            <h3 class="ml-medical-section-title">Informations personnelles</h3>
+            <dl class="ml-medical-data-list">
+              <div *ngIf="dossier.patientPrenom || dossier.patientNom"><dt>Nom et prénom</dt><dd>{{ dossier.patientPrenom }} {{ dossier.patientNom }}</dd></div>
+              <div *ngIf="dossier.patientDateNaissance"><dt>Date de naissance</dt><dd>{{ dossier.patientDateNaissance | date:'dd/MM/yyyy' }}</dd></div>
+              <div *ngIf="dossier.patientSexe"><dt>Sexe</dt><dd>{{ dossier.patientSexe }}</dd></div>
+              <div *ngIf="dossier.patientTelephone"><dt>Téléphone</dt><dd>{{ dossier.patientTelephone }}</dd></div>
+              <div *ngIf="dossier.patientEmail"><dt>Adresse électronique</dt><dd>{{ dossier.patientEmail }}</dd></div>
+            </dl>
+          </app-card>
+          <app-card>
+            <h3 class="ml-medical-section-title">Informations générales</h3>
+            <dl class="ml-medical-data-list">
+              <div><dt>Date de création</dt><dd>{{ dossier.dateCreation | date:'dd/MM/yyyy à HH:mm' }}</dd></div>
+              <div><dt>Dernière modification</dt><dd>{{ dossier.derniereModification | date:'dd/MM/yyyy à HH:mm' }}</dd></div>
+              <div><dt>Consultations</dt><dd>{{ dossier.comptesRendus.length }}</dd></div>
+              <div><dt>Résultats d’examens</dt><dd>{{ resultats.totalElements }}</dd></div>
+              <div><dt>Documents</dt><dd>{{ dossier.documentsMedicaux.length }}</dd></div>
+            </dl>
+          </app-card>
+        </div>
+      </div>
 
-  <app-card *ngIf="!loading && dossier && dossier.documentsMedicaux.length">
-    <h2 class="font-semibold text-slate-900">Documents médicaux</h2>
-    <div class="mt-3 divide-y divide-slate-100">
-      <div *ngFor="let document of dossier.documentsMedicaux" class="flex justify-between gap-4 py-3 text-sm">
-        <span class="font-medium text-slate-800">{{ document.nomFichier }}</span>
-        <span class="text-slate-500">{{ document.dateDepot | date:'dd/MM/yyyy' }}</span>
+      <div hlmTabsContent="history" class="ml-medical-panel">
+        <app-empty-state *ngIf="sortedReports.length === 0" title="Aucune consultation"
+          description="Les consultations et leurs comptes rendus apparaîtront ici."></app-empty-state>
+        <div *ngIf="sortedReports.length" class="ml-medical-timeline">
+          <article *ngFor="let report of sortedReports; let index = index" class="ml-medical-timeline__item">
+            <span class="ml-medical-timeline__marker" aria-hidden="true"></span>
+            <button type="button" class="ml-medical-consultation__summary" (click)="toggleReport(report, index)"
+              [attr.aria-expanded]="isExpanded(report, index)">
+              <span>
+                <strong>{{ reportDate(report) | date:'dd/MM/yyyy à HH:mm' }}</strong>
+                <small *ngIf="report.praticienPrenom || report.praticienNom">Dr {{ report.praticienPrenom }} {{ report.praticienNom }}</small>
+                <small *ngIf="report.specialiteNom || report.cliniqueNom">
+                  {{ report.specialiteNom }}<ng-container *ngIf="report.specialiteNom && report.cliniqueNom"> · </ng-container>{{ report.cliniqueNom }}
+                </small>
+              </span>
+              <span class="ml-medical-consultation__toggle">{{ isExpanded(report, index) ? 'Réduire' : 'Voir les détails' }}</span>
+            </button>
+            <dl *ngIf="isExpanded(report, index)" class="ml-medical-consultation__details">
+              <div *ngIf="report.motif"><dt>Motif</dt><dd>{{ report.motif }}</dd></div>
+              <div *ngIf="report.symptomes"><dt>Symptômes</dt><dd>{{ report.symptomes }}</dd></div>
+              <div *ngIf="report.diagnostic"><dt>Diagnostic</dt><dd>{{ report.diagnostic }}</dd></div>
+              <div *ngIf="report.observations"><dt>Observations médicales</dt><dd>{{ report.observations }}</dd></div>
+              <div *ngIf="report.traitementRecommande"><dt>Traitement</dt><dd>{{ report.traitementRecommande }}</dd></div>
+              <div *ngIf="report.recommandations"><dt>Recommandations</dt><dd>{{ report.recommandations }}</dd></div>
+              <div *ngIf="report.examensComplementaires"><dt>Examens complémentaires</dt><dd>{{ report.examensComplementaires }}</dd></div>
+              <div *ngIf="report.controleRequis"><dt>Consultation de contrôle</dt><dd><app-badge tone="warning">Nécessaire</app-badge></dd></div>
+            </dl>
+          </article>
+        </div>
+      </div>
+
+      <div hlmTabsContent="reports" class="ml-medical-panel">
+        <app-empty-state *ngIf="sortedReports.length === 0" title="Aucun compte rendu"
+          description="Aucun compte rendu médical n’est disponible."></app-empty-state>
+        <div class="space-y-3">
+          <app-card *ngFor="let report of sortedReports">
+            <div class="ml-medical-report__heading">
+              <div><h3>{{ reportDate(report) | date:'dd/MM/yyyy à HH:mm' }}</h3><p *ngIf="report.praticienPrenom || report.praticienNom">Dr {{ report.praticienPrenom }} {{ report.praticienNom }}</p></div>
+              <app-badge *ngIf="report.specialiteNom">{{ report.specialiteNom }}</app-badge>
+            </div>
+            <p *ngIf="report.cliniqueNom" class="ml-medical-muted">{{ report.cliniqueNom }}</p>
+            <div class="ml-medical-report__content">
+              <p *ngIf="report.contenu">{{ report.contenu }}</p>
+              <p *ngIf="report.diagnostic"><strong>Diagnostic :</strong> {{ report.diagnostic }}</p>
+              <p *ngIf="report.traitementRecommande"><strong>Traitement :</strong> {{ report.traitementRecommande }}</p>
+              <p *ngIf="report.recommandations"><strong>Recommandations :</strong> {{ report.recommandations }}</p>
+            </div>
+          </app-card>
+        </div>
+      </div>
+
+      <div hlmTabsContent="results" class="ml-medical-panel">
+        <div class="ml-medical-filters">
+          <app-search-input placeholder="Rechercher un examen, un praticien ou un fichier…" (search)="onSearch($event)"></app-search-input>
+          <select class="ml-medical-control" aria-label="Filtrer par type d’examen" (change)="setTypeFilter($event)">
+            <option value="">Tous les types</option>
+            <option *ngFor="let type of resultTypes" [value]="type">{{ type }}</option>
+          </select>
+          <input class="ml-medical-control" type="date" aria-label="Filtrer par date" (change)="setDateFilter($event)">
+        </div>
+        <app-empty-state *ngIf="filteredResults.length === 0" title="Aucun résultat disponible"
+          description="Aucun résultat ne correspond aux critères sélectionnés."></app-empty-state>
+        <div class="ml-medical-results">
+          <article *ngFor="let resultat of filteredResults" class="ml-medical-result">
+            <div class="ml-medical-result__main">
+              <div><p class="ml-medical-eyebrow">Résultat d’examen</p><h3>{{ resultat.typeExamen }}</h3></div>
+            </div>
+            <dl class="ml-medical-result__meta">
+              <div><dt>Date de l’examen</dt><dd>{{ resultat.dateExamen | date:'dd/MM/yyyy' }}</dd></div>
+              <div *ngIf="resultat.praticienNomComplet"><dt>Praticien</dt><dd>{{ resultat.praticienNomComplet }}</dd></div>
+              <div *ngIf="resultat.nomFichier"><dt>Fichier PDF</dt><dd>{{ resultat.nomFichier }}</dd></div>
+            </dl>
+            <p *ngIf="resultat.conclusion" class="ml-medical-result__conclusion">{{ resultat.conclusion }}</p>
+            <div class="ml-medical-actions">
+              <app-button size="sm" variant="outline" (click)="openResult(resultat)">Consulter</app-button>
+              <app-button size="sm" [loading]="downloadingId === resultat.id" (click)="download(resultat)">Télécharger</app-button>
+            </div>
+          </article>
+        </div>
+        <app-pagination *ngIf="resultats.totalElements > 0" [currentPage]="resultats.number"
+          [pageSize]="resultats.size" [totalElements]="resultats.totalElements"
+          (pageChange)="onPageChange($event)"></app-pagination>
+      </div>
+
+      <div hlmTabsContent="documents" class="ml-medical-panel">
+        <app-empty-state *ngIf="dossier.documentsMedicaux.length === 0" title="Aucun document médical"
+          description="Les documents associés à votre dossier apparaîtront ici."></app-empty-state>
+        <div class="ml-medical-documents">
+          <div *ngFor="let document of dossier.documentsMedicaux" class="ml-medical-document">
+            <div><strong>{{ document.nomFichier }}</strong><small>{{ document.typeMime }}</small></div>
+            <span>{{ document.dateDepot | date:'dd/MM/yyyy à HH:mm' }}</span>
+          </div>
+        </div>
       </div>
     </div>
-  </app-card>
+  </ng-container>
 </section>
+
+<app-modal #resultDialog title="Résultat d’examen" description="Document médical protégé" size="lg" (closed)="closeResult()">
+  <div *ngIf="selectedResult" class="space-y-4">
+    <dl class="ml-medical-data-list ml-medical-data-list--compact">
+      <div><dt>Type d’examen</dt><dd>{{ selectedResult.typeExamen }}</dd></div>
+      <div><dt>Date</dt><dd>{{ selectedResult.dateExamen | date:'dd/MM/yyyy' }}</dd></div>
+      <div *ngIf="selectedResult.praticienNomComplet"><dt>Praticien</dt><dd>{{ selectedResult.praticienNomComplet }}</dd></div>
+      <div *ngIf="selectedResult.nomFichier"><dt>Fichier</dt><dd>{{ selectedResult.nomFichier }}</dd></div>
+      <div *ngIf="selectedResult.conclusion"><dt>Conclusion</dt><dd>{{ selectedResult.conclusion }}</dd></div>
+    </dl>
+    <app-skeleton *ngIf="previewLoading" [rows]="4"></app-skeleton>
+    <iframe *ngIf="previewUrl" class="ml-medical-preview" [src]="previewUrl" title="Prévisualisation sécurisée du résultat PDF"></iframe>
+    <app-alert *ngIf="!previewLoading && !previewUrl" title="Prévisualisation indisponible">
+      Le PDF reste disponible au téléchargement.
+    </app-alert>
+    <div class="ml-medical-actions">
+      <app-button [loading]="downloadingId === selectedResult.id" (click)="download(selectedResult)">Télécharger le PDF</app-button>
+    </div>
+  </div>
+</app-modal>

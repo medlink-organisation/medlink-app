@@ -41,6 +41,13 @@ export class MedicalRecordService {
     );
   }
 
+  downloadResultForAppointment(rendezVousId: string, resultatId: string): Observable<Blob> {
+    return this.api.getBlob(
+      `/medical-record-service/medical-records/appointments/${encodeURIComponent(rendezVousId)}`
+      + `/exam-results/${encodeURIComponent(resultatId)}/download`
+    );
+  }
+
   downloadMine(): Observable<Blob> {
     return this.api.getBlob('/medical-record-service/medical-records/me/pdf');
   }

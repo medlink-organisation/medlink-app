@@ -5,6 +5,8 @@ export interface CompteRendu {
   praticienId: number | null;
   praticienNom: string | null;
   praticienPrenom: string | null;
+  specialiteNom: string | null;
+  cliniqueNom: string | null;
   cliniqueId: number | null;
   dateConsultation: string | null;
   dateRedaction: string | null;

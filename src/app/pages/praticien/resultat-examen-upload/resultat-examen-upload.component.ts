@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -27,11 +28,13 @@ export class ResultatExamenUploadComponent implements OnInit {
   loading = true;
   saving = false;
   error = '';
+  dialogError = '';
   success = '';
+  readonly maxExamDate = this.today();
 
   readonly formGroup = this.formBuilder.group({
     typeExamen: ['', [Validators.required, Validators.maxLength(150)]],
-    dateExamen: [this.today(), Validators.required],
+    dateExamen: [this.maxExamDate, Validators.required],
     conclusion: ['', Validators.maxLength(4000)]
   });
 
@@ -43,29 +46,37 @@ export class ResultatExamenUploadComponent implements OnInit {
     this.selectedAppointment = appointment;
     this.selectedFile = null;
     this.error = '';
-    this.formGroup.reset({ typeExamen: '', dateExamen: this.today(), conclusion: '' });
+    this.dialogError = '';
+    this.formGroup.reset({ typeExamen: '', dateExamen: this.maxExamDate, conclusion: '' });
     this.uploadDialog?.show();
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.item(0) ?? null;
-    if (file && (file.type !== 'application/pdf' || !file.name.toLowerCase().endsWith('.pdf'))) {
+    if (file && !file.name.toLowerCase().endsWith('.pdf')) {
       this.selectedFile = null;
       input.value = '';
-      this.error = 'Seuls les fichiers PDF sont acceptés.';
+      this.dialogError = 'Seuls les fichiers portant l’extension .pdf sont acceptés.';
+      this.cdr.markForCheck();
       return;
     }
-    this.selectedFile = file;
-    this.error = '';
+    this.selectedFile = file && file.type !== 'application/pdf'
+      ? new File([file], file.name, { type: 'application/pdf', lastModified: file.lastModified })
+      : file;
+    this.dialogError = '';
+    this.cdr.markForCheck();
   }
 
   submit(): void {
     if (this.formGroup.invalid || !this.selectedAppointment || !this.selectedFile || this.saving) {
       this.formGroup.markAllAsTouched();
-      if (!this.selectedFile) {
-        this.error = 'Sélectionnez le PDF du résultat.';
-      }
+      this.dialogError = !this.selectedAppointment
+        ? 'La consultation sélectionnée est introuvable.'
+        : !this.selectedFile
+          ? 'Sélectionnez le PDF du résultat.'
+          : 'Renseignez le type et la date de l’examen.';
+      this.cdr.markForCheck();
       return;
     }
 
@@ -78,6 +89,7 @@ export class ResultatExamenUploadComponent implements OnInit {
     };
     this.saving = true;
     this.error = '';
+    this.dialogError = '';
     this.resultatService.createForAppointment(this.selectedAppointment.id, request).subscribe({
       next: () => {
         this.saving = false;
@@ -85,10 +97,15 @@ export class ResultatExamenUploadComponent implements OnInit {
         this.success = 'Le résultat a été ajouté au dossier médical du patient.';
         this.selectedAppointment = null;
         this.selectedFile = null;
+        this.cdr.markForCheck();
       },
-      error: () => {
+      error: (uploadError: unknown) => {
         this.saving = false;
-        this.error = 'Impossible d’ajouter ce résultat. Vérifiez le PDF et le rendez-vous sélectionné.';
+        this.dialogError = this.businessError(
+          uploadError,
+          'Impossible d’ajouter ce résultat. Vérifiez le PDF et le rendez-vous sélectionné.'
+        );
+        this.cdr.markForCheck();
       }
     });
   }
@@ -137,5 +154,18 @@ export class ResultatExamenUploadComponent implements OnInit {
     const minutes = String(value.getMinutes()).padStart(2, '0');
     const seconds = String(value.getSeconds()).padStart(2, '0');
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  }
+
+  private businessError(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      const detail = error.error?.detail;
+      if (typeof detail === 'string' && detail.trim()) {
+        return detail;
+      }
+      if (error.status === 0) {
+        return 'Le service médical est momentanément inaccessible.';
+      }
+    }
+    return fallback;
   }
 }

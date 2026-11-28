@@ -6,6 +6,9 @@ export interface ResultatExamen {
   dateExamen: string | null;
   conclusion: string | null;
   datePublication: string | null;
+  nomFichier: string | null;
+  tailleOctets: number | null;
+  praticienNomComplet: string | null;
 }
 
 export interface CreateResultatExamenRequest {

@@ -29,15 +29,18 @@
     description="Le PDF sera rattaché automatiquement au dossier du patient de cette consultation."
     [closeDisabled]="saving" size="lg">
     <form [formGroup]="formGroup" (ngSubmit)="submit()" class="space-y-4">
+      <app-alert *ngIf="dialogError" variant="destructive" title="Publication impossible">{{ dialogError }}</app-alert>
       <div *ngIf="selectedAppointment" class="rounded-xl bg-slate-50 p-4 text-sm">
         <p class="font-semibold text-slate-900">{{ selectedAppointment.patientPrenom }} {{ selectedAppointment.patientNom }}</p>
         <p class="text-slate-500">Consultation du {{ selectedAppointment.dateDebut | date:'dd/MM/yyyy à HH:mm' }}</p>
       </div>
-      <app-form-field label="Type d’examen" [required]="true">
+      <app-form-field label="Type d’examen" [required]="true"
+        [error]="formGroup.controls.typeExamen.touched && formGroup.controls.typeExamen.invalid ? 'Le type d’examen est obligatoire (150 caractères maximum).' : ''">
         <input appFormControl formControlName="typeExamen" placeholder="Ex. Analyse sanguine, radiographie" />
       </app-form-field>
-      <app-form-field label="Date de l’examen" [required]="true">
-        <input appFormControl type="date" formControlName="dateExamen" />
+      <app-form-field label="Date de l’examen" [required]="true"
+        [error]="formGroup.controls.dateExamen.touched && formGroup.controls.dateExamen.invalid ? 'La date de l’examen est obligatoire.' : ''">
+        <input appFormControl type="date" formControlName="dateExamen" [max]="maxExamDate" />
       </app-form-field>
       <app-form-field label="Commentaire (facultatif)">
         <textarea appFormControl formControlName="conclusion" rows="4"
@@ -46,6 +49,7 @@
       <app-form-field label="Résultat PDF" [required]="true">
         <input appFormControl type="file" accept="application/pdf,.pdf" (change)="onFileSelected($event)" />
       </app-form-field>
+      <p *ngIf="selectedFile" class="text-sm font-medium text-slate-700">{{ selectedFile.name }}</p>
       <p class="text-xs text-slate-500">Le fichier est analysé par antivirus avant son stockage privé.</p>
       <div class="flex justify-end">
         <app-button type="submit" [loading]="saving" [disabled]="saving">Publier le résultat</app-button>

@@ -14,6 +14,7 @@ import { HlmLabelImports } from './primitives/label/src';
 import { HlmSelectImports } from './primitives/select/src';
 import { HlmSkeletonImports } from './primitives/skeleton/src';
 import { HlmTableImports } from './primitives/table/src';
+import { HlmTabsImports } from './primitives/tabs/src';
 import { AlertComponent } from './alert/alert.component';
 import { AvatarComponent } from './avatar/avatar.component';
 import { BadgeComponent } from './badge/badge.component';
@@ -58,7 +59,8 @@ const SPARTAN_IMPORTS = [
   ...HlmLabelImports,
   ...HlmSelectImports,
   ...HlmSkeletonImports,
-  ...HlmTableImports
+  ...HlmTableImports,
+  ...HlmTabsImports
 ];
 
 const UI_DECLARATIONS = [
@@ -109,6 +111,7 @@ const UI_DECLARATIONS = [
   ],
   exports: [
     ...UI_DECLARATIONS,
+    ...HlmTabsImports,
     CommonModule,
     ReactiveFormsModule,
     RouterModule
