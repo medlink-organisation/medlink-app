@@ -3,7 +3,8 @@
 # Same flow as the Spring services:
 #   every push/PR      -> install + build the Angular app
 #   tag vX.Y.Z on main -> build & push medaligdira/medlink-frontend:X.Y.Z, scan it,
-#                         then bump values/local/applications/frontend.yaml in GitOps
+#                         then bump values/local AND values/prod frontend.yaml in GitOps
+#                         (Argo CD deploys prod from values/prod)
 #
 # Repository secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, GITOPS_PAT
 # (the same ones medlink-platform uses).
@@ -27,6 +28,7 @@ env:
   IMAGE_NAME: medaligdira/medlink-frontend
   GITOPS_REPOSITORY: medlink-organisation/medlink-gitops
   GITOPS_FILE: values/local/applications/frontend.yaml
+  GITOPS_PROD_FILE: values/prod/applications/frontend.yaml
 
 jobs:
   ci:
@@ -162,13 +164,16 @@ jobs:
           path: gitops
 
       # yq (mikefarah) is preinstalled on GitHub's ubuntu runners.
-      - name: Update image tag in values file
+      - name: Update image tag in values files
         env:
           VERSION: ${{ needs.docker.outputs.version }}
         run: |
           cd gitops
-          yq -i '.image.tag = strenv(VERSION)' "$GITOPS_FILE"
-          cat "$GITOPS_FILE"
+          # This job only runs for a release tag (vX.Y.Z): update local and prod.
+          for f in "$GITOPS_FILE" "$GITOPS_PROD_FILE"; do
+            yq -i '.image.tag = strenv(VERSION)' "$f"
+            echo "== $f"; grep -n 'tag:' "$f"
+          done
 
       - name: Commit and push
         env:
@@ -177,15 +182,16 @@ jobs:
           cd gitops
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "$GITOPS_FILE"
+          git add "$GITOPS_FILE" "$GITOPS_PROD_FILE"
           if git diff --cached --quiet; then
             echo "frontend is already using ${VERSION}"
             exit 0
           fi
-          git commit -m "chore: bump frontend image to ${VERSION}"
-          for attempt in 1 2 3 4 5; do
+          git commit -m "chore: release frontend ${VERSION}"
+          # Backend service workflows may push to the GitOps repo at the same time.
+          for attempt in $(seq 1 10); do
             git pull --rebase origin main && git push origin main && exit 0
             git rebase --abort || true
-            sleep $((attempt * 2))
+            sleep $(( attempt * 3 + RANDOM % 10 ))
           done
           exit 1
